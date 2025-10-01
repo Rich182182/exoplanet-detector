@@ -1,0 +1,286 @@
+tree
+version=v4
+num_class=1
+num_tree_per_iteration=1
+label_index=0
+max_feature_idx=463
+objective=binary sigmoid:1
+feature_names=flux_mean_second_derivative_central flux_median flux_variation_coefficient flux_skewness flux_kurtosis flux_longest_strike_below_mean flux_longest_strike_above_mean flux_count_above_mean flux_count_below_mean flux_first_location_of_maximum flux_first_location_of_minimum flux_percentage_of_reoccurring_values_to_all_values flux_percentage_of_reoccurring_datapoints_to_all_datapoints flux_sum_of_reoccurring_values flux_benford_correlation flux_time_reversal_asymmetry_statistic_lag_3 flux_cid_ce_normalize_True flux_symmetry_looking_r_0.05 flux_large_standard_deviation_r_0.05 flux_large_standard_deviation_r_0.1 flux_large_standard_deviation_r_0.15000000000000002 flux_quantile_q_0.4 flux_quantile_q_0.6 flux_autocorrelation_lag_6 flux_autocorrelation_lag_7 flux_autocorrelation_lag_8 flux_autocorrelation_lag_9 flux_agg_autocorrelation_f_agg_mean_maxlag_40 flux_agg_autocorrelation_f_agg_median_maxlag_40 flux_agg_autocorrelation_f_agg_var_maxlag_40 flux_partial_autocorrelation_lag_2 flux_partial_autocorrelation_lag_4 flux_partial_autocorrelation_lag_5 flux_partial_autocorrelation_lag_6 flux_partial_autocorrelation_lag_7 flux_partial_autocorrelation_lag_8 flux_partial_autocorrelation_lag_9 flux_number_cwt_peaks_n_1 flux_number_cwt_peaks_n_5 flux_number_peaks_n_50 flux_index_mass_quantile_q_0.1 flux_index_mass_quantile_q_0.2 flux_index_mass_quantile_q_0.3 flux_index_mass_quantile_q_0.4 flux_index_mass_quantile_q_0.6 flux_index_mass_quantile_q_0.7 flux_index_mass_quantile_q_0.8 flux_index_mass_quantile_q_0.9 flux_cwt_coefficients_coeff_0_w_2_widths_2_5_10_20 flux_cwt_coefficients_coeff_0_w_5_widths_2_5_10_20 flux_cwt_coefficients_coeff_0_w_10_widths_2_5_10_20 flux_cwt_coefficients_coeff_0_w_20_widths_2_5_10_20 flux_cwt_coefficients_coeff_1_w_2_widths_2_5_10_20 flux_cwt_coefficients_coeff_2_w_2_widths_2_5_10_20 flux_cwt_coefficients_coeff_3_w_2_widths_2_5_10_20 flux_cwt_coefficients_coeff_4_w_2_widths_2_5_10_20 flux_cwt_coefficients_coeff_5_w_2_widths_2_5_10_20 flux_cwt_coefficients_coeff_6_w_2_widths_2_5_10_20 flux_cwt_coefficients_coeff_6_w_5_widths_2_5_10_20 flux_cwt_coefficients_coeff_7_w_2_widths_2_5_10_20 flux_cwt_coefficients_coeff_7_w_5_widths_2_5_10_20 flux_cwt_coefficients_coeff_8_w_2_widths_2_5_10_20 flux_cwt_coefficients_coeff_8_w_5_widths_2_5_10_20 flux_cwt_coefficients_coeff_9_w_2_widths_2_5_10_20 flux_cwt_coefficients_coeff_10_w_2_widths_2_5_10_20 flux_cwt_coefficients_coeff_11_w_2_widths_2_5_10_20 flux_cwt_coefficients_coeff_11_w_10_widths_2_5_10_20 flux_cwt_coefficients_coeff_12_w_2_widths_2_5_10_20 flux_cwt_coefficients_coeff_12_w_10_widths_2_5_10_20 flux_cwt_coefficients_coeff_13_w_2_widths_2_5_10_20 flux_cwt_coefficients_coeff_14_w_2_widths_2_5_10_20 flux_cwt_coefficients_coeff_14_w_5_widths_2_5_10_20 flux_cwt_coefficients_coeff_14_w_10_widths_2_5_10_20 flux_ar_coefficient_coeff_3_k_10 flux_ar_coefficient_coeff_4_k_10 flux_ar_coefficient_coeff_5_k_10 flux_ar_coefficient_coeff_6_k_10 flux_ar_coefficient_coeff_10_k_10 flux_change_quantiles_f_agg_mean_isabs_False_qh_0.2_ql_0.0 flux_change_quantiles_f_agg_mean_isabs_False_qh_0.4_ql_0.0 flux_change_quantiles_f_agg_mean_isabs_False_qh_0.6_ql_0.0 flux_change_quantiles_f_agg_mean_isabs_False_qh_0.8_ql_0.0 flux_change_quantiles_f_agg_mean_isabs_False_qh_1.0_ql_0.0 flux_change_quantiles_f_agg_mean_isabs_False_qh_0.4_ql_0.2 flux_change_quantiles_f_agg_mean_isabs_False_qh_0.6_ql_0.2 flux_change_quantiles_f_agg_mean_isabs_False_qh_0.8_ql_0.2 flux_change_quantiles_f_agg_mean_isabs_False_qh_1.0_ql_0.2 flux_change_quantiles_f_agg_mean_isabs_False_qh_0.6_ql_0.4 flux_change_quantiles_f_agg_var_isabs_False_qh_0.6_ql_0.4 flux_change_quantiles_f_agg_mean_isabs_True_qh_0.6_ql_0.4 flux_change_quantiles_f_agg_mean_isabs_False_qh_0.8_ql_0.4 flux_change_quantiles_f_agg_mean_isabs_False_qh_1.0_ql_0.4 flux_change_quantiles_f_agg_mean_isabs_False_qh_0.8_ql_0.6 flux_change_quantiles_f_agg_mean_isabs_False_qh_1.0_ql_0.6 flux_change_quantiles_f_agg_mean_isabs_False_qh_1.0_ql_0.8 flux_fft_coefficient_attr_real_coeff_1 flux_fft_coefficient_attr_real_coeff_2 flux_fft_coefficient_attr_real_coeff_3 flux_fft_coefficient_attr_real_coeff_4 flux_fft_coefficient_attr_real_coeff_5 flux_fft_coefficient_attr_real_coeff_7 flux_fft_coefficient_attr_real_coeff_8 flux_fft_coefficient_attr_real_coeff_9 flux_fft_coefficient_attr_real_coeff_10 flux_fft_coefficient_attr_real_coeff_11 flux_fft_coefficient_attr_real_coeff_12 flux_fft_coefficient_attr_real_coeff_13 flux_fft_coefficient_attr_real_coeff_14 flux_fft_coefficient_attr_real_coeff_15 flux_fft_coefficient_attr_real_coeff_16 flux_fft_coefficient_attr_real_coeff_17 flux_fft_coefficient_attr_real_coeff_18 flux_fft_coefficient_attr_real_coeff_19 flux_fft_coefficient_attr_real_coeff_20 flux_fft_coefficient_attr_real_coeff_21 flux_fft_coefficient_attr_real_coeff_22 flux_fft_coefficient_attr_real_coeff_23 flux_fft_coefficient_attr_real_coeff_24 flux_fft_coefficient_attr_real_coeff_25 flux_fft_coefficient_attr_real_coeff_26 flux_fft_coefficient_attr_real_coeff_27 flux_fft_coefficient_attr_real_coeff_28 flux_fft_coefficient_attr_real_coeff_30 flux_fft_coefficient_attr_real_coeff_32 flux_fft_coefficient_attr_real_coeff_34 flux_fft_coefficient_attr_real_coeff_35 flux_fft_coefficient_attr_real_coeff_36 flux_fft_coefficient_attr_real_coeff_37 flux_fft_coefficient_attr_real_coeff_38 flux_fft_coefficient_attr_real_coeff_40 flux_fft_coefficient_attr_real_coeff_41 flux_fft_coefficient_attr_real_coeff_42 flux_fft_coefficient_attr_real_coeff_44 flux_fft_coefficient_attr_real_coeff_45 flux_fft_coefficient_attr_real_coeff_46 flux_fft_coefficient_attr_real_coeff_47 flux_fft_coefficient_attr_real_coeff_48 flux_fft_coefficient_attr_real_coeff_49 flux_fft_coefficient_attr_real_coeff_50 flux_fft_coefficient_attr_real_coeff_51 flux_fft_coefficient_attr_real_coeff_52 flux_fft_coefficient_attr_real_coeff_53 flux_fft_coefficient_attr_real_coeff_54 flux_fft_coefficient_attr_real_coeff_56 flux_fft_coefficient_attr_real_coeff_57 flux_fft_coefficient_attr_real_coeff_58 flux_fft_coefficient_attr_real_coeff_59 flux_fft_coefficient_attr_real_coeff_60 flux_fft_coefficient_attr_real_coeff_61 flux_fft_coefficient_attr_real_coeff_62 flux_fft_coefficient_attr_real_coeff_63 flux_fft_coefficient_attr_real_coeff_65 flux_fft_coefficient_attr_real_coeff_66 flux_fft_coefficient_attr_real_coeff_68 flux_fft_coefficient_attr_real_coeff_69 flux_fft_coefficient_attr_real_coeff_70 flux_fft_coefficient_attr_real_coeff_71 flux_fft_coefficient_attr_real_coeff_72 flux_fft_coefficient_attr_real_coeff_73 flux_fft_coefficient_attr_real_coeff_74 flux_fft_coefficient_attr_real_coeff_75 flux_fft_coefficient_attr_real_coeff_76 flux_fft_coefficient_attr_real_coeff_77 flux_fft_coefficient_attr_real_coeff_78 flux_fft_coefficient_attr_real_coeff_79 flux_fft_coefficient_attr_real_coeff_80 flux_fft_coefficient_attr_real_coeff_81 flux_fft_coefficient_attr_real_coeff_82 flux_fft_coefficient_attr_real_coeff_83 flux_fft_coefficient_attr_real_coeff_85 flux_fft_coefficient_attr_real_coeff_86 flux_fft_coefficient_attr_real_coeff_87 flux_fft_coefficient_attr_real_coeff_88 flux_fft_coefficient_attr_real_coeff_89 flux_fft_coefficient_attr_real_coeff_90 flux_fft_coefficient_attr_real_coeff_91 flux_fft_coefficient_attr_real_coeff_92 flux_fft_coefficient_attr_real_coeff_93 flux_fft_coefficient_attr_real_coeff_94 flux_fft_coefficient_attr_real_coeff_95 flux_fft_coefficient_attr_real_coeff_96 flux_fft_coefficient_attr_real_coeff_97 flux_fft_coefficient_attr_real_coeff_98 flux_fft_coefficient_attr_real_coeff_99 flux_fft_coefficient_attr_imag_coeff_1 flux_fft_coefficient_attr_imag_coeff_2 flux_fft_coefficient_attr_imag_coeff_3 flux_fft_coefficient_attr_imag_coeff_4 flux_fft_coefficient_attr_imag_coeff_5 flux_fft_coefficient_attr_imag_coeff_6 flux_fft_coefficient_attr_imag_coeff_7 flux_fft_coefficient_attr_imag_coeff_8 flux_fft_coefficient_attr_imag_coeff_9 flux_fft_coefficient_attr_imag_coeff_10 flux_fft_coefficient_attr_imag_coeff_11 flux_fft_coefficient_attr_imag_coeff_12 flux_fft_coefficient_attr_imag_coeff_13 flux_fft_coefficient_attr_imag_coeff_14 flux_fft_coefficient_attr_imag_coeff_16 flux_fft_coefficient_attr_imag_coeff_17 flux_fft_coefficient_attr_imag_coeff_18 flux_fft_coefficient_attr_imag_coeff_19 flux_fft_coefficient_attr_imag_coeff_20 flux_fft_coefficient_attr_imag_coeff_21 flux_fft_coefficient_attr_imag_coeff_22 flux_fft_coefficient_attr_imag_coeff_23 flux_fft_coefficient_attr_imag_coeff_24 flux_fft_coefficient_attr_imag_coeff_25 flux_fft_coefficient_attr_imag_coeff_26 flux_fft_coefficient_attr_imag_coeff_27 flux_fft_coefficient_attr_imag_coeff_28 flux_fft_coefficient_attr_imag_coeff_29 flux_fft_coefficient_attr_imag_coeff_30 flux_fft_coefficient_attr_imag_coeff_31 flux_fft_coefficient_attr_imag_coeff_32 flux_fft_coefficient_attr_imag_coeff_33 flux_fft_coefficient_attr_imag_coeff_34 flux_fft_coefficient_attr_imag_coeff_35 flux_fft_coefficient_attr_imag_coeff_37 flux_fft_coefficient_attr_imag_coeff_38 flux_fft_coefficient_attr_imag_coeff_39 flux_fft_coefficient_attr_imag_coeff_40 flux_fft_coefficient_attr_imag_coeff_41 flux_fft_coefficient_attr_imag_coeff_42 flux_fft_coefficient_attr_imag_coeff_43 flux_fft_coefficient_attr_imag_coeff_44 flux_fft_coefficient_attr_imag_coeff_45 flux_fft_coefficient_attr_imag_coeff_47 flux_fft_coefficient_attr_imag_coeff_49 flux_fft_coefficient_attr_imag_coeff_52 flux_fft_coefficient_attr_imag_coeff_53 flux_fft_coefficient_attr_imag_coeff_54 flux_fft_coefficient_attr_imag_coeff_55 flux_fft_coefficient_attr_imag_coeff_56 flux_fft_coefficient_attr_imag_coeff_57 flux_fft_coefficient_attr_imag_coeff_59 flux_fft_coefficient_attr_imag_coeff_61 flux_fft_coefficient_attr_imag_coeff_62 flux_fft_coefficient_attr_imag_coeff_63 flux_fft_coefficient_attr_imag_coeff_64 flux_fft_coefficient_attr_imag_coeff_65 flux_fft_coefficient_attr_imag_coeff_66 flux_fft_coefficient_attr_imag_coeff_67 flux_fft_coefficient_attr_imag_coeff_68 flux_fft_coefficient_attr_imag_coeff_69 flux_fft_coefficient_attr_imag_coeff_70 flux_fft_coefficient_attr_imag_coeff_71 flux_fft_coefficient_attr_imag_coeff_72 flux_fft_coefficient_attr_imag_coeff_73 flux_fft_coefficient_attr_imag_coeff_74 flux_fft_coefficient_attr_imag_coeff_75 flux_fft_coefficient_attr_imag_coeff_76 flux_fft_coefficient_attr_imag_coeff_79 flux_fft_coefficient_attr_imag_coeff_80 flux_fft_coefficient_attr_imag_coeff_81 flux_fft_coefficient_attr_imag_coeff_82 flux_fft_coefficient_attr_imag_coeff_83 flux_fft_coefficient_attr_imag_coeff_84 flux_fft_coefficient_attr_imag_coeff_85 flux_fft_coefficient_attr_imag_coeff_86 flux_fft_coefficient_attr_imag_coeff_87 flux_fft_coefficient_attr_imag_coeff_88 flux_fft_coefficient_attr_imag_coeff_89 flux_fft_coefficient_attr_imag_coeff_90 flux_fft_coefficient_attr_imag_coeff_91 flux_fft_coefficient_attr_imag_coeff_94 flux_fft_coefficient_attr_imag_coeff_95 flux_fft_coefficient_attr_imag_coeff_96 flux_fft_coefficient_attr_imag_coeff_97 flux_fft_coefficient_attr_imag_coeff_98 flux_fft_coefficient_attr_imag_coeff_99 flux_fft_coefficient_attr_abs_coeff_2 flux_fft_coefficient_attr_abs_coeff_4 flux_fft_coefficient_attr_abs_coeff_5 flux_fft_coefficient_attr_abs_coeff_7 flux_fft_coefficient_attr_abs_coeff_8 flux_fft_coefficient_attr_abs_coeff_10 flux_fft_coefficient_attr_abs_coeff_11 flux_fft_coefficient_attr_abs_coeff_12 flux_fft_coefficient_attr_abs_coeff_14 flux_fft_coefficient_attr_abs_coeff_19 flux_fft_coefficient_attr_abs_coeff_20 flux_fft_coefficient_attr_abs_coeff_21 flux_fft_coefficient_attr_abs_coeff_23 flux_fft_coefficient_attr_abs_coeff_26 flux_fft_coefficient_attr_abs_coeff_27 flux_fft_coefficient_attr_abs_coeff_35 flux_fft_coefficient_attr_abs_coeff_37 flux_fft_coefficient_attr_abs_coeff_38 flux_fft_coefficient_attr_abs_coeff_40 flux_fft_coefficient_attr_abs_coeff_47 flux_fft_coefficient_attr_abs_coeff_49 flux_fft_coefficient_attr_abs_coeff_54 flux_fft_coefficient_attr_abs_coeff_58 flux_fft_coefficient_attr_abs_coeff_61 flux_fft_coefficient_attr_abs_coeff_62 flux_fft_coefficient_attr_abs_coeff_68 flux_fft_coefficient_attr_abs_coeff_69 flux_fft_coefficient_attr_abs_coeff_70 flux_fft_coefficient_attr_abs_coeff_71 flux_fft_coefficient_attr_abs_coeff_72 flux_fft_coefficient_attr_abs_coeff_75 flux_fft_coefficient_attr_abs_coeff_80 flux_fft_coefficient_attr_abs_coeff_81 flux_fft_coefficient_attr_abs_coeff_85 flux_fft_coefficient_attr_abs_coeff_86 flux_fft_coefficient_attr_abs_coeff_87 flux_fft_coefficient_attr_abs_coeff_88 flux_fft_coefficient_attr_abs_coeff_89 flux_fft_coefficient_attr_abs_coeff_94 flux_fft_coefficient_attr_abs_coeff_96 flux_fft_coefficient_attr_abs_coeff_99 flux_fft_coefficient_attr_angle_coeff_0 flux_fft_coefficient_attr_angle_coeff_1 flux_fft_coefficient_attr_angle_coeff_2 flux_fft_coefficient_attr_angle_coeff_3 flux_fft_coefficient_attr_angle_coeff_4 flux_fft_coefficient_attr_angle_coeff_5 flux_fft_coefficient_attr_angle_coeff_6 flux_fft_coefficient_attr_angle_coeff_7 flux_fft_coefficient_attr_angle_coeff_8 flux_fft_coefficient_attr_angle_coeff_9 flux_fft_coefficient_attr_angle_coeff_10 flux_fft_coefficient_attr_angle_coeff_11 flux_fft_coefficient_attr_angle_coeff_12 flux_fft_coefficient_attr_angle_coeff_13 flux_fft_coefficient_attr_angle_coeff_14 flux_fft_coefficient_attr_angle_coeff_15 flux_fft_coefficient_attr_angle_coeff_16 flux_fft_coefficient_attr_angle_coeff_17 flux_fft_coefficient_attr_angle_coeff_18 flux_fft_coefficient_attr_angle_coeff_19 flux_fft_coefficient_attr_angle_coeff_20 flux_fft_coefficient_attr_angle_coeff_21 flux_fft_coefficient_attr_angle_coeff_22 flux_fft_coefficient_attr_angle_coeff_23 flux_fft_coefficient_attr_angle_coeff_24 flux_fft_coefficient_attr_angle_coeff_25 flux_fft_coefficient_attr_angle_coeff_26 flux_fft_coefficient_attr_angle_coeff_27 flux_fft_coefficient_attr_angle_coeff_28 flux_fft_coefficient_attr_angle_coeff_29 flux_fft_coefficient_attr_angle_coeff_30 flux_fft_coefficient_attr_angle_coeff_31 flux_fft_coefficient_attr_angle_coeff_32 flux_fft_coefficient_attr_angle_coeff_33 flux_fft_coefficient_attr_angle_coeff_34 flux_fft_coefficient_attr_angle_coeff_35 flux_fft_coefficient_attr_angle_coeff_36 flux_fft_coefficient_attr_angle_coeff_37 flux_fft_coefficient_attr_angle_coeff_38 flux_fft_coefficient_attr_angle_coeff_39 flux_fft_coefficient_attr_angle_coeff_40 flux_fft_coefficient_attr_angle_coeff_41 flux_fft_coefficient_attr_angle_coeff_42 flux_fft_coefficient_attr_angle_coeff_43 flux_fft_coefficient_attr_angle_coeff_44 flux_fft_coefficient_attr_angle_coeff_45 flux_fft_coefficient_attr_angle_coeff_46 flux_fft_coefficient_attr_angle_coeff_47 flux_fft_coefficient_attr_angle_coeff_48 flux_fft_coefficient_attr_angle_coeff_49 flux_fft_coefficient_attr_angle_coeff_50 flux_fft_coefficient_attr_angle_coeff_51 flux_fft_coefficient_attr_angle_coeff_52 flux_fft_coefficient_attr_angle_coeff_53 flux_fft_coefficient_attr_angle_coeff_54 flux_fft_coefficient_attr_angle_coeff_55 flux_fft_coefficient_attr_angle_coeff_56 flux_fft_coefficient_attr_angle_coeff_57 flux_fft_coefficient_attr_angle_coeff_58 flux_fft_coefficient_attr_angle_coeff_59 flux_fft_coefficient_attr_angle_coeff_60 flux_fft_coefficient_attr_angle_coeff_61 flux_fft_coefficient_attr_angle_coeff_62 flux_fft_coefficient_attr_angle_coeff_63 flux_fft_coefficient_attr_angle_coeff_64 flux_fft_coefficient_attr_angle_coeff_65 flux_fft_coefficient_attr_angle_coeff_66 flux_fft_coefficient_attr_angle_coeff_67 flux_fft_coefficient_attr_angle_coeff_68 flux_fft_coefficient_attr_angle_coeff_69 flux_fft_coefficient_attr_angle_coeff_70 flux_fft_coefficient_attr_angle_coeff_71 flux_fft_coefficient_attr_angle_coeff_72 flux_fft_coefficient_attr_angle_coeff_73 flux_fft_coefficient_attr_angle_coeff_74 flux_fft_coefficient_attr_angle_coeff_75 flux_fft_coefficient_attr_angle_coeff_76 flux_fft_coefficient_attr_angle_coeff_77 flux_fft_coefficient_attr_angle_coeff_78 flux_fft_coefficient_attr_angle_coeff_79 flux_fft_coefficient_attr_angle_coeff_80 flux_fft_coefficient_attr_angle_coeff_81 flux_fft_coefficient_attr_angle_coeff_82 flux_fft_coefficient_attr_angle_coeff_83 flux_fft_coefficient_attr_angle_coeff_84 flux_fft_coefficient_attr_angle_coeff_85 flux_fft_coefficient_attr_angle_coeff_86 flux_fft_coefficient_attr_angle_coeff_87 flux_fft_coefficient_attr_angle_coeff_88 flux_fft_coefficient_attr_angle_coeff_89 flux_fft_coefficient_attr_angle_coeff_90 flux_fft_coefficient_attr_angle_coeff_91 flux_fft_coefficient_attr_angle_coeff_92 flux_fft_coefficient_attr_angle_coeff_93 flux_fft_coefficient_attr_angle_coeff_94 flux_fft_coefficient_attr_angle_coeff_95 flux_fft_coefficient_attr_angle_coeff_96 flux_fft_coefficient_attr_angle_coeff_97 flux_fft_coefficient_attr_angle_coeff_98 flux_fft_coefficient_attr_angle_coeff_99 flux_fft_aggregated_aggtype_centroid flux_fft_aggregated_aggtype_variance flux_fft_aggregated_aggtype_skew flux_value_count_value_0 flux_value_count_value_1 flux_value_count_value_-1 flux_range_count_max_1_min_-1 flux_range_count_max_1000000000000.0_min_0 flux_linear_trend_attr_pvalue flux_linear_trend_attr_slope flux_agg_linear_trend_attr_rvalue_chunk_len_5_f_agg_max flux_agg_linear_trend_attr_rvalue_chunk_len_5_f_agg_var flux_agg_linear_trend_attr_rvalue_chunk_len_50_f_agg_max flux_agg_linear_trend_attr_rvalue_chunk_len_50_f_agg_min flux_agg_linear_trend_attr_slope_chunk_len_5_f_agg_max flux_agg_linear_trend_attr_slope_chunk_len_50_f_agg_max flux_agg_linear_trend_attr_slope_chunk_len_50_f_agg_var flux_agg_linear_trend_attr_stderr_chunk_len_10_f_agg_max flux_agg_linear_trend_attr_stderr_chunk_len_10_f_agg_var flux_augmented_dickey_fuller_attr_teststat_autolag_AIC flux_augmented_dickey_fuller_attr_usedlag_autolag_AIC flux_number_crossing_m_m_1 flux_energy_ratio_by_chunks_num_segments_10_segment_focus_0 flux_energy_ratio_by_chunks_num_segments_10_segment_focus_1 flux_energy_ratio_by_chunks_num_segments_10_segment_focus_2 flux_energy_ratio_by_chunks_num_segments_10_segment_focus_3 flux_energy_ratio_by_chunks_num_segments_10_segment_focus_4 flux_energy_ratio_by_chunks_num_segments_10_segment_focus_5 flux_energy_ratio_by_chunks_num_segments_10_segment_focus_6 flux_energy_ratio_by_chunks_num_segments_10_segment_focus_7 flux_energy_ratio_by_chunks_num_segments_10_segment_focus_8 flux_energy_ratio_by_chunks_num_segments_10_segment_focus_9 flux_ratio_beyond_r_sigma_r_0.5 flux_ratio_beyond_r_sigma_r_1 flux_ratio_beyond_r_sigma_r_1.5 flux_ratio_beyond_r_sigma_r_2 flux_ratio_beyond_r_sigma_r_2.5 flux_ratio_beyond_r_sigma_r_3 flux_ratio_beyond_r_sigma_r_5 flux_ratio_beyond_r_sigma_r_7 flux_ratio_beyond_r_sigma_r_10 flux_lempel_ziv_complexity_bins_2 flux_lempel_ziv_complexity_bins_3 flux_lempel_ziv_complexity_bins_5 flux_lempel_ziv_complexity_bins_10 flux_lempel_ziv_complexity_bins_100 flux_fourier_entropy_bins_2 flux_fourier_entropy_bins_3 flux_fourier_entropy_bins_5 flux_fourier_entropy_bins_10 flux_fourier_entropy_bins_100 flux_permutation_entropy_dimension_7_tau_1
+feature_infos=[-872.74892190459946:396.43750027485237] [0:1086] [-68.631937433870561:5.2078099487883973] [-7.1813897519505829:0.19734455050847741] [-0.054691616406081896:47.250531966051653] [-9:129] [-0.85590465872156019:42.66738894907909] [-12.726572528883183:1.5656824989302525] [-2.160518444666002:3.9406779661016951] [-0.5979317562473071:1.112499561470389] [-0.75394806996703745:1.1348726234630533] [-1.5361607523400169:1.3795622706021959] [-2.4812410011204982:1.774429128440004] [-574.39174423023508:54.904799598486861] [-4.1936806561504447:0.68913678144653201] [-21464253394.663742:5924343223.9116335] [-5.2646902788168672:0.3664804998599499] [0:1] [0:1] [0:1] [0:1] [-13028.88830275225:0.57224770642201839] [-0.55163164953062049:5995.135449262395] [-2.2176562701266604:7.601901549092239] [-3.6577234767923308:10.588031116039195] [-5.767963871438905:10.532715701262054] [-5.1036920172853897:5.8549928001117664] [-1.0381857210920016:4.0186608359146589] [-4.0910388782610907:4.9139294415476353] [-0.33296427949109297:22.541570260342557] [-1.6097338996804287:2.6700326969913215] [-5.5695126758222955:4.4378443999458339] [-4.9859920445938206:9.0990250805508577] [-6.385793534895523:7.8820351125363679] [-5.6213665122011838:7.6028614946619593] [-6.0212440264363662:3.8861411526440528] [-5.3057724927615766:3.9122525381711806] [-5.0660792951541849:3.2951541850220263] [-5.8421052631578947:4.5754385964912281] [-4.7808219178082192:1.904109589041096] [-1.8928969096506603:15.084244671862985] [-2.5642156997541297:10.160628979342816] [-3.9413763212882689:10.297452838544254] [-4.255396352179253:7.7239753512046772] [-6.9996199901030982:6.7700864574217574] [-9.9473724262072629:6.2038732888204455] [-11.887467878859855:5.5538621494352682] [-9.715789429215377:2.9333494743788964] [-32.398392343343637:208.64827497778458] [-15.963490847881536:273.36937999129123] [-0.623985792579965:683.12825728652024] [-1.7667333702304651:854.94297999492198] [-29.280348124680177:254.63022721671638] [-22.200640820876419:625.59577046868503] [-816.33908169251276:1371.750623403678] [-472.19701366446628:617.28597733289018] [-241.78510199308246:197.2413674153176] [-597.30303745488754:440.02381221169554] [-145.33865071375078:2087.4457438419213] [-1349.0673289843485:528.7456677836667] [-266.00702289210579:967.97068840745703] [-1156.268555384353:309.18674174950257] [-388.95464847369493:555.8944974081719] [-751.40373553896563:424.09112796302691] [-1148.0588835503415:307.30792879173958] [-1107.2275405447622:410.8917668673916] [-289.65343772123578:327.49607517608831] [-669.23232030172096:544.99138186801997] [-298.16869083498028:196.75959367516168] [-343.9140408758899:577.30611770184339] [-425.03877002225494:768.75066152418492] [-431.21594259057792:234.34857813229485] [-398.02960288497371:74.457120840815733] [-4.5840696886652816:4.3289895963317893] [-9.8066469667541671:5.2250217102253735] [-6.3365004976009409:10.296676649041297] [-7.0652770051539573:7.8093455257836801] [-6.5863763242250437:9.1202764129541904] [-951.11225855427438:1449.2177525265665] [-716.82049953970295:1488.8296416408261] [-1192.0135266956293:1380.2017356552292] [-994.27799291751535:963.8276594319517] [-976.78887325645167:275.03051815701861] [-1030773.6387330503:1272287.0464173125] [-411932.10615432682:370750.56082989322] [-303810.05205824849:528544.36453190609] [-343.76147614731991:1161.4110089183187] [-12531.669855904562:3359.2448489482522] [-0.20624519633156771:42476743.248399004] [-0.47537281096029671:8349.1044791084969] [-238392.57886993588:275611.9854286164] [-295.31437400708796:591.27826606791621] [-702088.79689622577:603522.98773347377] [-178.6422995705347:825.18635996232251] [-130.57715873668229:540.64802955079904] [-570.06104290468807:4551.1161480917453] [-1134.9860211305272:1815.5039553629535] [-1767.1254693797778:1047.2302837268689] [-727.75900272416482:1423.0374581237925] [-2868.4633047687985:643.86122001847639] [-485.83335727847208:815.5768918088404] [-1011.464982638807:926.0951761956353] [-3659.2816802480193:1549.3516990213041] [-99.502231006067248:886.93611138787401] [-1219.2814983454091:1593.3061405097831] [-435.60226949166309:1518.1197085067299] [-4638.8398574715438:499.63891064884984] [-1274.3816239806156:1281.8538596664519] [-421.71871506868831:3982.2877190709269] [-1896.5393872289415:281.65562634516311] [-263.07337036793336:2267.267006224994] [-764.87678440394757:266.90501322745729] [-401.23993477070917:844.86518912904194] [-1103.1752580383379:2370.5354726616952] [-2437.1748036896929:1266.6113426763877] [-3232.8690480478231:705.71660342678251] [-2141.3996105072379:190.01286708101082] [-2522.4462542788697:747.44784871864624] [-81.329019121958041:944.82380914402836] [-830.17604993679265:1438.0607558186134] [-818.61887452138637:1333.1133828090251] [-2063.9507532989096:1440.3885429436032] [-613.09700176903107:4004.5558135232395] [-355.67108030547826:1948.0273109901418] [-1390.7585458550966:880.25751322275039] [-610.97634360242591:3279.0313986560486] [-1461.75428699484:369.37970117449231] [-3037.1660024146508:769.8215213698835] [-1249.3753807487449:2130.8488089390785] [-1835.70388838696:1294.9064720074691] [-2498.6247667382822:2074.0654273685855] [-3035.1404711210221:674.98592167652544] [-3693.491299337385:848.86066570951402] [-3799.9034474686018:1391.3291468384984] [-1679.7021766526325:1138.2907090459216] [-1390.5081851007317:214.34079983267702] [-1427.5510941709704:2611.1194259643044] [-1077.0633251675554:181.43497997154756] [-968.44352074764686:3445.1026703442999] [-791.37363364922464:5459.4540266427503] [-2428.9295889387222:679.42633409921928] [-399.50098110389479:1784.6151358470484] [-687.26864096309134:598.07013334513681] [-214.57114854357278:2295.9338854872094] [-329.91590195425204:1953.3255413042532] [-1434.0011594625225:1225.449043197254] [-2110.2667338654701:1807.7433812183961] [-1122.9352240565786:3809.545379234366] [-2597.2312481568479:4263.7689903290811] [-1937.1575194748993:2227.1705797259542] [-626.01332529063359:5140.4425530125573] [-240.0121998759987:425.23745033678688] [-603.50527135505456:1370.091069407712] [-317.49784908093454:1649.7018467014157] [-422.43574340540243:1041.8796384517952] [-1282.2789274125582:1212.495524843534] [-1259.4832258761176:3435.8738616315441] [-793.64459871053407:2994.8287614705901] [-2757.0349101854354:258.17661255873674] [-264.94340847153836:3975.4474539732983] [-1743.112403590738:2516.7385551682323] [-5909.2102361507687:1193.6479932994378] [-1004.9564331813142:935.32528223986594] [-5120.6476135112516:1106.2056799617408] [-5382.2023724774135:389.45916704008579] [-1497.8295957357479:635.67169648736285] [-695.58895822615239:627.78844315444155] [-2421.7859733977907:315.66165515078058] [-644.68970722717074:2222.9139204749217] [-1994.9055053487898:3893.3400303085305] [-1089.3243063350258:169.88443405862893] [-2802.2719815925157:1037.5363159063738] [-438.62974492500996:2305.834438234469] [-372.89395597128669:1113.3053448557027] [-3800.7848294726496:1320.6709529615878] [-2485.5785457960769:555.82328780575779] [-168.19591351572595:1935.463719162409] [-440.01767117938715:2656.7693553509407] [-2094.5848874401995:2187.4799378367402] [-668.21313711771506:1212.3054918471407] [-638.57237138597236:635.75030484233525] [-2110.3993782909502:754.90544539504174] [-2850.3886379362375:2077.5960306587713] [-2626.7346331255117:1265.7059818640259] [-3127.2452236644676:653.19828263819602] [-925.13142264202088:1853.700742100983] [-2200.0180697158321:309.09224725189875] [-192.76205766791935:2369.8982478583316] [-1376.3695389457239:788.69193622930254] [-3454.2522377434125:1014.4373701428703] [-1972.2336622728142:1359.0085171122053] [-4788.4109708666538:618.71576279148724] [-2190.9611050834133:415.1604601095147] [-1069.4591515117286:1238.1515456471727] [-266.84460530670566:1291.151205930556] [-1487.7692805960321:1159.4764876061781] [-1004.3551865824861:2326.151410337076] [-1664.4127457303236:1413.1276885063901] [-2561.9117482784559:435.97880328686551] [-710.78238253747691:1999.5634810901051] [-218.4941848299176:1601.4365529948332] [-2525.6362470384393:532.67905946811027] [-2270.7159098886764:1085.3549151700508] [-3077.3165508469106:869.93049859782263] [-1332.1809653205453:2865.5259407809053] [-555.28840719370976:916.40488338953753] [-1861.5422494577485:4131.2989962636966] [-1596.3043933812037:1145.3050747187515] [-538.19559308181579:502.08388520868402] [-689.56921217266074:2730.531636294204] [-335.90902806874493:2114.1235856218614] [-3518.384463816778:1124.8012613750952] [-1024.1061944808828:2568.9386369852145] [-501.81308820077811:593.0466536939075] [-4998.6134604211175:512.53244367158459] [-464.35014245951822:1819.1828893756895] [-2561.6393666946906:488.1103593794316] [-946.64144340040673:2222.263115804024] [-1419.2364623177414:624.53259277936002] [-2474.1965413723792:397.48969840849463] [-871.52161676041726:312.89935985723071] [-2199.0476343516216:685.08888120834274] [-142.98152276518204:531.06121951252317] [-2944.5704731744831:460.54398432855106] [-515.76259814206082:691.9457836335514] [-1429.9187850523115:922.4150781641813] [-811.22921056026371:1350.8758374935251] [-2041.9272319359175:1066.6165597579557] [-622.47929561637773:793.40319537930441] [-3460.7944269941136:163.8256009319513] [-6487.5321228249804:278.35328766366979] [-1731.1880049419415:1385.8549000089779] [-177.65298142317144:3851.7497879693456] [-1204.9866795928724:1037.1401455683103] [-365.32631658101627:5945.3005825143637] [-1100.4962890301701:3851.4210194146845] [-416.35282503594999:1360.01429032027] [-2554.2086352858246:1463.6353889794455] [-428.7333619258701:1116.9973326380746] [-2376.0594379450126:493.26038894751008] [-3982.7133851613821:716.92593786313387] [-479.85814212652082:1463.9064543755987] [-1107.8890367286617:182.77779991544725] [-2034.9247179395177:2843.9426679858493] [-379.05610041915713:4645.8405654472454] [-637.5703173740078:987.66486327763891] [-1425.7716648494643:644.7274290469602] [-1504.0888423279482:3691.9409582252342] [-821.25994423661973:2100.7515866327399] [-5339.6723857181632:415.43704781789694] [-1854.0084047183375:2596.8761581851736] [-3963.9421010240953:1309.9088344865388] [-950.15676132551562:4048.3710935106187] [-1249.6238015811409:1303.8969989284424] [-1344.7761702114644:889.81413746392332] [-609.98128351911544:4091.3599606447619] [-4688.3900869732061:295.8939229250625] [-3201.7152464256692:395.61956652118369] [-1260.8932201111907:2904.165604747895] [-3878.3113508639071:499.56827590241659] [-2026.9711288027684:471.34242576761881] [-249.99110904182066:581.87461274939699] [-2884.4992136713504:448.58053240639526] [-624.33480065397998:2879.2039737063847] [-1661.4522714368622:4528.8110570732515] [-463.97890208382506:4212.1245651043037] [-5828.5304687286807:1184.2479820776553] [-1282.1404251185061:4814.5063236771548] [-1117.4415405409497:833.69162014128381] [-6102.9256367442513:541.7976672794033] [-497.85071694209284:763.27754753739907] [-0.22925036219195016:611.21688086903384] [-0.33247377309331266:944.22954998446949] [-0.22978765027778875:810.36319807896211] [-0.28901664089374618:585.97420637279436] [-0.30477508716999752:699.58141272384887] [-0.29887487516948108:561.24775517172407] [-0.27781464841400216:740.84688732641223] [-0.28565267163790131:710.29971724575682] [-0.2400329391904919:533.80874408134832] [-0.26131024147600046:635.90972350740401] [-0.24564764260458835:936.65380435450572] [-0.24307153007937643:1088.8016389289221] [-0.27367213235533422:1005.3594006444342] [-0.23649997082852164:552.8023566584742] [-0.26158559284550381:758.76013700580222] [-0.25173240940535352:909.62461177993998] [-0.23083367305459512:1017.6286064219386] [-0.2157385294650557:1074.710323511114] [-0.26842108758458344:799.83934365061964] [-0.29675426504403579:1123.5908697751829] [-0.24884702228622643:545.8562283604997] [-0.23191441907186378:585.40551069439402] [-0.25912706786752615:1162.4145942219691] [-0.21141292514440338:946.51316559073405] [-0.280903504348258:846.09947464407344] [-0.24836281590459328:810.7338815472865] [-0.25801057202191141:1320.0455044836717] [-0.28680467374658442:498.18527951844544] [-0.33441974409071829:1177.6767106568652] [-0.24633653386419502:1601.8235387021261] [-0.33880111181263683:933.37872298937509] [-0.26559894110705223:519.63175379621634] [-0.21812283337769128:471.37101816300992] [-0.32537516547952033:1315.8089623426135] [-0.27668410798207771:1048.9214625699367] [-0.26209416073760899:1021.9529117445776] [-0.26565987174088884:701.03081916215592] [-0.26349401264600081:907.09683700206551] [-0.2099723654731766:1141.3788272057975] [-0.27346017098208036:1118.6186790361448] [-0.28911727763323891:725.19421844769568] none [-2.1478449824025865:0.84663506561100887] [-2.1495471039484402:0.87422556585026145] [-1.2571816737709802:1.2440566672397642] [-1.2527713501049864:0.94710498529744802] [-0.86065123310714176:0.89859237012636628] [-1.581175989761213:1.5821008189508217] [-1.7764139722406056:1.351001247349106] [-0.95717612524027484:0.99205094968727991] [-1.1525904678510137:1.3385415444199067] [-2.6526126040517894:3.0235007072605091] [-1.9665878649974349:1.2757237645441448] [-1.3822592410482077:1.4666674189569315] [-0.77879115411725719:1.1570585080159885] [-1.647233896618975:1.3324536265450355] [-2.9600397140235439:1.7069121842005688] [-0.45626156732889434:1.1740623164177182] [-2.20681072484388:1.8719954122565741] [-1.8891688238555771:0.50623698224944536] [-1.5230732319356381:0.37743206247743433] [-1.1675785057280021:0.89486587700955122] [-1.7330791052532999:1.0496310905665731] [-1.1532396402421325:0.54197826696486529] [-0.73950454956484513:1.2594308539335288] [-1.301354144512711:1.3682870690154159] [-1.9708150455686635:1.5408970062939256] [-2.5670102980387521:1.162955546452709] [-1.6496869679165205:1.5649308092052909] [-2.8550762295637058:1.3782462591689726] [-1.8273120075580176:0.69790963124549033] [-1.2827149145638512:1.0157014353538734] [-1.8699582929455176:0.52679125750917555] [-2.5390059534920408:1.9923401846086699] [-0.72442280167488726:1.1145310910177861] [-1.4592993027400629:1.6073530950444301] [-1.1566209559163139:1.3260724172372065] [-1.9670531906744904:0.48658331208830036] [-1.0532282033784617:1.3296510991126671] [-0.86625231096331601:1.2851359599295837] [-2.0064760900824914:2.2749489671036609] [-1.7272635385146544:2.2198576758040089] [-2.0946337706498737:1.0638295042585175] [-1.1507874657263268:2.0310866307862758] [-3.6733362837760191:1.7051497411165693] [-1.6468910014885869:1.3919459477634812] [-1.5010971380132352:0.84736414872671662] [-1.1883848585132262:0.87183696933808641] [-1.6080339305322919:3.0405510764215951] [-0.73408396343247695:0.68031192298928256] [-0.73044929435204986:1.3106371060762851] [-1.5380892704748137:2.5266978310520649] [-1.1380351012756094:0.6442978694685999] [-0.65455989305268658:1.4933240887523211] [-1.3854813033587401:2.1251093437164501] [-2.3565820654801666:2.0967593516891605] [-0.87202766781763308:0.96083049770660822] [-2.1562813245737296:1.3098531333194439] [-0.63676030833884678:1.0494528842110333] [-2.2592840344137857:1.3854439584969973] [-1.3478652564813098:1.3587259438926187] [-1.3003016699050878:0.59578292582859482] [-0.79449320287241543:0.84485723136466107] [-0.52257382975593192:1.2544683822427711] [-1.7704082453819527:0.6677737827225273] [-0.47551912869824925:1.0620119720195718] [-1.6586077945945434:1.4527750483725488] [-1.5984119806714741:0.46971452413050641] [-1.2085222994836369:2.8710343349766476] [-1.6372699031433493:1.0908996104540165] [-1.5328386207176674:0.95867160338540358] [-1.5710680528970828:0.7924363826717381] [-1.7828530636390953:0.70589942946365536] [-0.82088332855962964:0.79376781430393861] [-0.88556981982996696:0.84315717946505597] [-1.2395950892934817:1.0074615256938231] [-1.8204030635903845:0.80447693894797934] [-0.95004207671764385:0.79379478969577355] [-0.34371791173207966:1.118533384110717] [-1.9864157976738435:1.2002694646173901] [-0.58339541683808149:0.88386050475032951] [-1.6718489848121845:1.1740600984214176] [-1.6164087807614247:0.74908835261896312] [-0.98082816840493381:1.7203908120759024] [-1.6217424119020278:1.5767899061926272] [-2.1477580131657881:1.9555444694530904] [-2.3270145673381664:1.5580458403518813] [-0.52632379859572187:0.92294932419431575] [-1.8886721542491627:2.187717760243574] [-1.6819570106397614:1.1162751569842491] [-1.3396452684425786:1.2857609307945694] [-2.1606831921032406:1.006417253268463] [-0.60804958891053318:1.4372863230792987] [-2.0136738429365102:1.4215337749726316] [-1.6893559238705831:1.4802052572072795] [-0.99881580020726068:1.0528649080795609] [-0.94880513337838612:0.62764482164952162] [-0.49713961164363191:0.82502087731902884] [-0.65383598615983185:1.1831459442628962] [-1.1835598364931967:1.39059201988487] [-1.9840082328639572:0.90636024705896068] [-6.3741375530593247:0.36390133847365846] [-32.870956620661566:3.2049485169014322] [-0.68267058413317383:4.6189583970873196] [-1.4948181977867556:7.8278587739329] [-0.33333333333333331:5.333333333333333] [-0.5:7.5] [-2.310493531384763:6.4376297716019808] [-7.6042699199390009:3.8833396873808614] [-3.7023783043101297e-06:3687.0710328105256] [-10742.607577955901:2553.5104920774352] [-6.7406646547276869:10.327890396725239] [-2.9236508201052298:5.8914602201998569] [-4.1196356926639455:5.7847666612460973] [-5.8750683804613626:5.0794969019226759] [-2847.9589637213739:13649.163075187485] [-3353.5892699570873:10284.353932010885] [-2225466.4656983209:10537516.629317893] [-0.4046839546062051:3697.9111874530295] [-0.037327647230782468:722236.25483891636] [-9.4948786321556415:3.2867148455129969] [-25.5:1] [-4.4740279937791598:1.6979782270606532] [-1.1698978718220876:8.8893527997667388] [-1.6061192761519993:12.378136384928947] [-1.6032848014647776:13.242934574286485] [-1.9059129779030271:12.504456380908415] [-2.110312886595604:21.081047080641689] [-1.6383618415659298:14.015344757312837] [-2.0919320860689319:19.516924712575516] [-2.131369317263069:19.688153608255359] [-1.8752743856311667:16.636928233396912] [-2.0205140634463499:19.980856499688613] [-2.0258884015097047:5.9445180011273138] [-1.6177428575862001:2.2473499821731631] [-1.0628532724730142:1.2495753595804666] [-1.0682535122816998:0.68004100241528331] [-0.79354064464095475:0.92798013215679798] [-0.61160447030318366:4.3663234613415698] [-0.091902679229872733:19.284881951959591] [0:5.967450965957914] [0:4.0300322589853224] [-2.2778139520734166:12.385058567215673] [-0.95345399655666607:2.1818390485035746] [-1.3203862645324951:2.3807761060371382] [-1.7822699854232813:4.1089997925032691] [-2.6825424292994975:10.224325111703999] [-3.7121637225105788:4.247553486273377] [-3.1669354902323636:1.2081021011247906] [-3.5122497659999445:2.6690411488892365] [-5.9394030952717705:2.8836136991591306] [-7.6126363459258037:3.1722525954681431] [-6.9997900749290505:0.088185057870888289]
+tree_sizes=544 582 580 584 585 586 581
+
+Tree=0
+num_leaves=4
+num_cat=0
+split_feature=434 88 446
+split_gain=352.284 220.394 50.8574
+threshold=-0.76962068602956279 5.6746901007722546 -0.71572530915811072
+decision_type=2 2 2
+left_child=2 -2 -1
+right_child=1 -3 -4
+leaf_value=0.01116831683168317 -0.00068712300026226069 -0.01326186830015314 -0.014838709677419355
+leaf_weight=252.5 953.25 163.25 7.7499999999999991
+leaf_count=1010 3813 653 31
+internal_value=-8.35301e-05 -0.00252575 0.0103939
+internal_weight=1376.75 1116.5 260.25
+internal_count=5507 4466 1041
+is_linear=0
+shrinkage=0.01
+
+
+Tree=1
+num_leaves=4
+num_cat=0
+split_feature=454 88 434
+split_gain=411.476 209.852 57.3372
+threshold=-0.84269936870468987 5.6746901007722546 0.66982801191663999
+decision_type=2 2 2
+left_child=2 -2 -1
+right_child=1 -3 -4
+leaf_value=0.011733138939770184 -0.0010551465620233229 -0.013699635385037365 -0.015038512378398055
+leaf_weight=264.2421287894249 951.99926918745041 152.24331776797771 8.2496919333934766
+leaf_count=1057 3808 609 33
+internal_value=-8.26958e-05 -0.00279846 0.0109226
+internal_weight=1376.73 1104.24 272.492
+internal_count=5507 4417 1090
+is_linear=0
+shrinkage=0.01
+
+
+Tree=2
+num_leaves=4
+num_cat=0
+split_feature=18 88 434
+split_gain=409.683 217.879 64.141
+threshold=1.0000000180025095e-35 5.6746901007722546 0.66982801191663999
+decision_type=2 2 2
+left_child=2 -2 -1
+right_child=1 -3 -4
+leaf_value=0.01134552009004538 -0.0011215533572917164 -0.014186104784442349 -0.015420637051470325
+leaf_weight=280.21817283332348 939.4989066272974 147.7232890278101 9.2483847588300687
+leaf_count=1121 3758 591 37
+internal_value=-8.18713e-05 -0.00289666 0.0104903
+internal_weight=1376.69 1087.22 289.467
+internal_count=5507 4349 1158
+is_linear=0
+shrinkage=0.01
+
+
+Tree=3
+num_leaves=4
+num_cat=0
+split_feature=434 88 19
+split_gain=331.445 208.725 66.8594
+threshold=-0.76962068602956279 8.6190401463588877 0.0093686067992668782
+decision_type=2 2 2
+left_child=2 -2 -1
+right_child=1 -3 -4
+leaf_value=0.010941493866119175 -0.00077307189972390742 -0.013599843182954752 -0.019861354130737252
+leaf_weight=252.92966549098492 970.48890554904938 145.94207334518433 7.248562052845954
+leaf_count=1012 3882 584 29
+internal_value=-8.10578e-05 -0.00244981 0.0100833
+internal_weight=1376.61 1116.43 260.178
+internal_count=5507 4466 1041
+is_linear=0
+shrinkage=0.01
+
+
+Tree=4
+num_leaves=4
+num_cat=0
+split_feature=5 5 3
+split_gain=345.916 419.037 183.377
+threshold=-1.0000000180025095e-35 -0.99937460860681926 -0.83103354993988054
+decision_type=2 2 2
+left_child=1 -1 -2
+right_child=2 -3 -4
+leaf_value=-0.00066688502958538686 0.01090678358660409 -0.019880031348153408 0.00078957922635806608
+leaf_weight=395.42551070451736 263.87661248445511 159.2242601364851 557.9827970713377
+leaf_count=1582 1056 637 2232
+internal_value=-8.02537e-05 -0.00618244 0.00403794
+internal_weight=1376.51 554.65 821.859
+internal_count=5507 2219 3288
+is_linear=0
+shrinkage=0.01
+
+
+Tree=5
+num_leaves=4
+num_cat=0
+split_feature=18 430 41
+split_gain=386.309 227.496 51.4936
+threshold=1.0000000180025095e-35 -0.009986145591742452 -0.75270122849164567
+decision_type=2 2 2
+left_child=2 -2 -1
+right_child=1 -3 -4
+leaf_value=-0.016676578873983761 0.00099442167191908818 -0.0083567123705161079 0.010780910802136161
+leaf_weight=6.9953164607286444 649.22859279811382 434.13086940348148 289.30496849119663
+leaf_count=28 2597 1737 1158
+internal_value=1.4506e-05 -0.00275283 0.0101327
+internal_weight=1379.66 1083.36 296.3
+internal_count=5520 4334 1186
+is_linear=0
+shrinkage=0.01
+
+
+Tree=6
+num_leaves=4
+num_cat=0
+split_feature=455 433 9
+split_gain=321.651 200.146 42.6432
+threshold=-1.0091214621681597 -1.0238772666663623 -0.11114468093652394
+decision_type=2 2 2
+left_child=2 -2 -1
+right_child=1 -3 -4
+leaf_value=-0.0086382848044107962 -0.010027453161672891 1.608717588357386e-05 0.011077855937776406
+leaf_weight=11.490285754203795 257.15517312288284 868.62143701314926 242.2589835524559
+leaf_count=46 1029 3475 970
+internal_value=1.43643e-05 -0.00227811 0.0101851
+internal_weight=1379.53 1125.78 253.749
+internal_count=5520 4504 1016
+is_linear=0
+shrinkage=0.01
+
+
+end of trees
+
+feature_importances:
+flux_change_quantiles_f_agg_var_isabs_False_qh_0.6_ql_0.4=4
+flux_energy_ratio_by_chunks_num_segments_10_segment_focus_0=4
+flux_longest_strike_below_mean=2
+flux_large_standard_deviation_r_0.05=2
+flux_skewness=1
+flux_first_location_of_maximum=1
+flux_large_standard_deviation_r_0.1=1
+flux_index_mass_quantile_q_0.2=1
+flux_agg_linear_trend_attr_stderr_chunk_len_10_f_agg_var=1
+flux_number_crossing_m_m_1=1
+flux_ratio_beyond_r_sigma_r_1.5=1
+flux_lempel_ziv_complexity_bins_3=1
+flux_lempel_ziv_complexity_bins_5=1
+
+parameters:
+[boosting: gbdt]
+[objective: binary]
+[metric: auc]
+[tree_learner: serial]
+[device_type: cpu]
+[data_sample_strategy: bagging]
+[data: ]
+[valid: ]
+[num_iterations: 1000]
+[learning_rate: 0.01]
+[num_leaves: 15]
+[num_threads: 0]
+[seed: 53]
+[deterministic: 0]
+[force_col_wise: 0]
+[force_row_wise: 0]
+[histogram_pool_size: -1]
+[max_depth: 2]
+[min_data_in_leaf: 20]
+[min_sum_hessian_in_leaf: 0.001]
+[bagging_fraction: 0.92]
+[pos_bagging_fraction: 1]
+[neg_bagging_fraction: 1]
+[bagging_freq: 5]
+[bagging_seed: 20329]
+[bagging_by_query: 0]
+[feature_fraction: 0.5]
+[feature_fraction_bynode: 1]
+[feature_fraction_seed: 32608]
+[extra_trees: 0]
+[extra_seed: 23306]
+[early_stopping_round: 0]
+[early_stopping_min_delta: 0]
+[first_metric_only: 0]
+[max_delta_step: 0]
+[lambda_l1: 0]
+[lambda_l2: 0]
+[linear_lambda: 0]
+[min_gain_to_split: 0]
+[drop_rate: 0.1]
+[max_drop: 50]
+[skip_drop: 0.5]
+[xgboost_dart_mode: 0]
+[uniform_drop: 0]
+[drop_seed: 17767]
+[top_rate: 0.2]
+[other_rate: 0.1]
+[min_data_per_group: 100]
+[max_cat_threshold: 32]
+[cat_l2: 10]
+[cat_smooth: 10]
+[max_cat_to_onehot: 4]
+[top_k: 20]
+[monotone_constraints: ]
+[monotone_constraints_method: basic]
+[monotone_penalty: 0]
+[feature_contri: ]
+[forcedsplits_filename: ]
+[refit_decay_rate: 0.9]
+[cegb_tradeoff: 1]
+[cegb_penalty_split: 0]
+[cegb_penalty_feature_lazy: ]
+[cegb_penalty_feature_coupled: ]
+[path_smooth: 0]
+[interaction_constraints: ]
+[verbosity: -1]
+[saved_feature_importance_type: 0]
+[use_quantized_grad: 0]
+[num_grad_quant_bins: 4]
+[quant_train_renew_leaf: 0]
+[stochastic_rounding: 1]
+[linear_tree: 0]
+[max_bin: 255]
+[max_bin_by_feature: ]
+[min_data_in_bin: 3]
+[bin_construct_sample_cnt: 200000]
+[data_random_seed: 211]
+[is_enable_sparse: 1]
+[enable_bundle: 1]
+[use_missing: 1]
+[zero_as_missing: 0]
+[feature_pre_filter: 1]
+[pre_partition: 0]
+[two_round: 0]
+[header: 0]
+[label_column: ]
+[weight_column: ]
+[group_column: ]
+[ignore_column: ]
+[categorical_feature: ]
+[forcedbins_filename: ]
+[precise_float_parser: 0]
+[parser_config_file: ]
+[objective_seed: 31239]
+[num_class: 1]
+[is_unbalance: 0]
+[scale_pos_weight: 1]
+[sigmoid: 1]
+[boost_from_average: 1]
+[reg_sqrt: 0]
+[alpha: 0.9]
+[fair_c: 1]
+[poisson_max_delta_step: 0.7]
+[tweedie_variance_power: 1.5]
+[lambdarank_truncation_level: 30]
+[lambdarank_norm: 1]
+[label_gain: ]
+[lambdarank_position_bias_regularization: 0]
+[eval_at: ]
+[multi_error_top_k: 1]
+[auc_mu_weights: ]
+[num_machines: 1]
+[local_listen_port: 12400]
+[time_out: 120]
+[machine_list_filename: ]
+[machines: ]
+[gpu_platform_id: -1]
+[gpu_device_id: -1]
+[gpu_use_dp: 0]
+[num_gpu: 1]
+
+end of parameters
+
+pandas_categorical:[]
