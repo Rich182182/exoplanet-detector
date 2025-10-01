@@ -9,7 +9,7 @@ function Navbar() {
           <Link to="/">Головна</Link>
         </li>
         <li>
-          <Link to="/empty">Детектор екзопланет</Link>
+          <Link to="/model">Model</Link>
         </li>
       </ul>
     </nav>

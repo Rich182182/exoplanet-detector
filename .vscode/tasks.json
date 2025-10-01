@@ -1,0 +1,38 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start Frontend",
+      "type": "shell",
+      "command": "npm start",
+      "group": "build",
+      "presentation": { "echo": true, "reveal": "always", "focus": false, "panel": "new" },
+      "runOptions": { "runOn": "folderOpen" },
+      "options": { "cwd": "${workspaceFolder}/frontend" }
+    },
+    {
+    "label": "Start Backend",
+    "type": "shell",
+    "command": "PowerShell",
+    "args": [
+        "-Command",
+        "${workspaceFolder}/backend/venv/Scripts/Activate.ps1; uvicorn main:app --reload --host 0.0.0.0 --port 8000"
+    ],
+    "group": "build",
+    "presentation": { "echo": true, "reveal": "always", "focus": false, "panel": "new" },
+    "options": {
+        "cwd": "${workspaceFolder}/backend"
+    },
+    "dependsOrder": "parallel"
+    },
+    {
+      "label": "Start All",
+      "dependsOn": ["Start Frontend", "Start Backend"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "dependsOrder": "parallel"
+    }
+  ]
+}
