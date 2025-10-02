@@ -559,7 +559,7 @@ async def predict(files: List[UploadFile] = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Model prediction failed: {str(e)}")
 
-    is_exo = bool(proba_val > 0.497)
+    is_exo = bool(proba_val > 0.52)
 
     try:
         importances = model.feature_importance(importance_type='gain')
