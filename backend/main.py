@@ -661,7 +661,8 @@ async def predict(files: List[UploadFile] = File(...)):
         'probability': proba_val,
         'features': top_features_list,
         'raw_curve': {'time': raw_curve_time, 'flux': raw_curve_flux},
-        'processed_curve': {'time': processed_curve_time, 'flux': processed_curve_flux}
+        'processed_curve': {'time': processed_curve_time, 'flux': processed_curve_flux},
+        'FITS_value': FITS_value,
     }
     result['suspicious_regions'] = suspicious_regions
     result['folded_curve'] = folded_data

@@ -196,11 +196,11 @@ const LightCurveChart: React.FC<Props> = ({
       if (s.end < vr[0] || s.start > vr[1]) return;
       const x1 = scaleX(Math.max(s.start, vr[0]));
       const x2 = scaleX(Math.min(s.end, vr[1]));
-      ctx.strokeStyle = 'rgba(140,160,180,0.12)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 1)';
       ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(x1, pad.t); ctx.lineTo(x1, pad.t + ch); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(x2, pad.t); ctx.lineTo(x2, pad.t + ch); ctx.stroke();
-      ctx.fillStyle = 'rgba(200,220,230,0.8)'; ctx.font = '10px Inter, system-ui';
+      ctx.fillStyle = 'rgba(255, 255, 255, 1)'; ctx.font = '10px Inter, system-ui';
       ctx.fillText('start', Math.max(pad.l + 4, x1 + 4), pad.t + 12);
       ctx.fillText('end', Math.max(pad.l + 4, x2 - 24), pad.t + 12);
     });
@@ -262,7 +262,8 @@ const LightCurveChart: React.FC<Props> = ({
 
     // axis titles
     ctx.fillStyle = 'rgba(220,235,245,0.9)'; ctx.font = '12px Inter, system-ui';
-    ctx.fillText('Time (days)', W / 2 - 30, H - 6); ctx.save(); ctx.translate(14, H / 2); ctx.rotate(-Math.PI/2); ctx.fillText('Flux', 0, 0); ctx.restore();
+    // ctx.fillText('Time (days)', W / 2 - 10, H); ctx.save(); 
+    ctx.translate(14, H / 2); ctx.rotate(-Math.PI/2); ctx.fillText('Flux', 0, 0); ctx.restore();
 
     function roundRect(ctx: CanvasRenderingContext2D, x:number, y:number, w:number, h:number, r:number) {
       ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();

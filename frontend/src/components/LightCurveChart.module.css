@@ -1,11 +1,11 @@
 /* LightCurveChart.module.css (аккуратный, минимальный стиль) */
-.wrap { display:flex; flex-direction:column; gap:10px; }
+.wrap { display:flex; flex-direction:column; gap:10px;  }
 .topControls { display:flex; justify-content:space-between; align-items:center; }
 .viewBtns { display:flex; gap:8px; }
 .btn {
   padding:6px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.03); background:transparent; color:#dff7f2; cursor:pointer;
 }
-.btn:hover { background: rgba(255,255,255,0.02); }
+.btn:hover { background: rgba(255,255,255,0.02);  }
 .active { background: rgba(56,209,198,0.08); border-color: rgba(56,209,198,0.16); }
 
 .btnGhost { padding:6px 10px; border-radius:8px; background:transparent; color:var(--accent-2); border:1px solid rgba(255,190,90,0.08); }
