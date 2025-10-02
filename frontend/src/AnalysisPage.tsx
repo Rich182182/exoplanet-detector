@@ -16,7 +16,7 @@ interface AnalysisData {
   transit_candidates?: TransitCandidate[];
   candidates_all?: TransitCandidate[];
   segments?: Segment[];
-  FITS_value?: number | string;
+  FITS_value?: number;
 }
 const SIDEBAR_WIDTH = 360;
 const SIDEBAR_HEIGHT = 560;
@@ -58,7 +58,7 @@ const AnalysisPage: React.FC = () => {
     const times = data.processed_curve.time;
     const fitsValueNum = Number(data?.FITS_value);
     const fitsValueSafe = Number.isFinite(fitsValueNum) ? fitsValueNum : 4;
-    const n = fitsValueSafe - 1;
+    const n = fitsValueSafe -1;
     const tmin = Math.min(...times), tmax = Math.max(...times);
     const segs: Segment[] = [];
     for (let i = 0; i < n; i++) {

@@ -15,7 +15,7 @@ FastAPI backend для локального использования.
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from scipy.signal import find_peaks
+from scipy.signal import find_peaks, peak_widths
 from scipy.stats import median_abs_deviation
 import numpy as np
 import pandas as pd
@@ -37,18 +37,17 @@ MODEL_PATH = "lgb_model.txt"
 SCALER_PATH = "scaler.pkl"
 FEATURE_COLS_PATH = "feature_cols.pkl"
 BINARY_COLS_PATH = "binary_cols.pkl"
-CONTINOUS_COLS_PATH = "continouos_cols.pkl"  # именно так у тебя назывался файл
-BEST_THRESHOLD_PATH = "best_threshold.pkl"   # опционально (если есть)
+CONTINOUS_COLS_PATH = "continouos_cols.pkl"
+BEST_THRESHOLD_PATH = "best_threshold.pkl"
 
-# Параметры предобработки (подставлены те же, что в pipeline)
-STEP_DAYS = 1.0 / 24.0            # ресемплинг: 1 час = 1/24 дней
-MED_KERNEL_HOURS = 25             # kernel для медфильтра (нечётный), как в pipeline
-MIN_POINTS_AFTER_CLEAN = 50       # если после очистки мало точек — отклоняем
-TSFRESH_PARAMS = EfficientFCParameters()  # используем Efficient набор признаков
-TSFRESH_N_JOBS = 1                # для одного примера достаточно 1 процесса
-FITS_value = 0
+# Параметры предобработки
+STEP_DAYS = 1.0 / 24.0
+MED_KERNEL_HOURS = 25
+MIN_POINTS_AFTER_CLEAN = 50
+TSFRESH_PARAMS = EfficientFCParameters()
+TSFRESH_N_JOBS = 1
 
-# CORS origins (frontend локально)
+# CORS origins
 FRONTEND_ORIGINS = ["http://localhost:3000"]
 
 # -------------------------
@@ -63,7 +62,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Загружаем модель и вспомогательные объекты. Функция-обёртка с ясными ошибками.
 def load_artifacts():
     if not os.path.exists(MODEL_PATH):
         raise RuntimeError(f"Model file not found: {MODEL_PATH}")
@@ -76,45 +74,37 @@ def load_artifacts():
     if not os.path.exists(CONTINOUS_COLS_PATH):
         raise RuntimeError(f"Continous cols file not found: {CONTINOUS_COLS_PATH}")
 
-    # LightGBM модель (сохранённая через save_model)
     model = lgb.Booster(model_file=MODEL_PATH)
-
-    # Скалер, список колонок и разбиение по типам
     scaler = joblib.load(SCALER_PATH)
     feature_cols = joblib.load(FEATURE_COLS_PATH)
     binary_cols = joblib.load(BINARY_COLS_PATH)
     continouos_cols = joblib.load(CONTINOUS_COLS_PATH)
 
-    # Опционально: порог
     best_threshold = 0.5
     if os.path.exists(BEST_THRESHOLD_PATH):
         try:
             best_threshold = joblib.load(BEST_THRESHOLD_PATH)
         except Exception:
-            # если файл есть, но читается неправильно — используем 0.5
             best_threshold = 0.5
 
     return model, scaler, feature_cols, binary_cols, continouos_cols, best_threshold
 
-# Загружаем артефакты при старте приложения (ошибка остановит запуск)
 model, scaler, FEATURE_COLS, BINARY_COLS, CONTINOUS_COLS, BEST_THRESHOLD = load_artifacts()
 
 # -------------------------
-# Утилиты для чтения FITS и предобработки (копия/адаптация pipeline)
+# Утилиты для чтения FITS и предобработки
 # -------------------------
 
 def _find_time_and_flux_in_hdu(hdu) -> Tuple[Optional[str], Optional[str]]:
     """
     Поиск колонок 'TIME' и 'SAP_FLUX' (или других похожих) в HDU с таблицей.
     Возвращает имена колонок (time_col, flux_col) или (None,None).
-    Используем гибкий поиск, учитывая возможные имена.
     """
-    FITS_value = +1
+    # ✅ УБРАЛИ ГЛОБАЛЬНУЮ ПЕРЕМЕННУЮ ОТСЮДА
     names = []
     try:
         names = [n for n in hdu.names]
     except Exception:
-        # если нет .names (редко), попадаем сюда
         try:
             names = list(hdu.columns.names)
         except Exception:
@@ -126,11 +116,9 @@ def _find_time_and_flux_in_hdu(hdu) -> Tuple[Optional[str], Optional[str]]:
         c = col.lower()
         if ('time' in c) and (time_col is None):
             time_col = col
-        # предпочитаем SAP_FLUX если есть
         if 'sap_flux' in c:
             flux_col = col
             break
-        # иначе любой flux-like
         if ('flux' in c) and (flux_col is None):
             flux_col = col
     return time_col, flux_col
@@ -138,18 +126,14 @@ def _find_time_and_flux_in_hdu(hdu) -> Tuple[Optional[str], Optional[str]]:
 
 def read_time_flux_from_fitsbytes(fbytes: bytes) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Открывает FITS из байтового объекта (BytesIO), находит таблицу с TIME и FLUX (сырые SAP_FLUX),
-    и возвращает два numpy массива (time, flux) для этого файла.
-    Бросает Exception при невозможности прочитать.
+    Открывает FITS из байтового объекта, находит таблицу с TIME и FLUX,
+    возвращает два numpy массива (time, flux).
     """
     bio = BytesIO(fbytes)
     with fits.open(bio, memmap=False) as hdul:
-        # ищем HDU с таблицей данных (обычно HDU[1])
-        # но безопасно ищем ближайший HDU с .data и колонками
         table_hdu = None
         for h in hdul:
             if getattr(h, 'data', None) is not None:
-                # проверим наличие колонок
                 try:
                     cols = list(h.columns.names)
                 except Exception:
@@ -162,7 +146,6 @@ def read_time_flux_from_fitsbytes(fbytes: bytes) -> Tuple[np.ndarray, np.ndarray
 
         tcol, fcol = _find_time_and_flux_in_hdu(table_hdu)
         if tcol is None or fcol is None:
-            # более информативное сообщение
             available = []
             try:
                 available = list(table_hdu.columns.names)
@@ -171,12 +154,9 @@ def read_time_flux_from_fitsbytes(fbytes: bytes) -> Tuple[np.ndarray, np.ndarray
             raise ValueError(f"Cannot find TIME/FLUX columns. Available: {available}")
 
         data = table_hdu.data
-        # извлекаем, приводим к numpy и float
         time = np.array(data[tcol]).astype(float)
         flux = np.array(data[fcol]).astype(float)
         return time, flux
-
-# Вспомогательные функции для детренда/ресемплинга — почти копия pipeline
 
 def _safe_kernel(k):
     """Гарантирует нечётность и минимум 3."""
@@ -189,16 +169,13 @@ def resample_to_1h_and_detrend(t: np.ndarray, f: np.ndarray,
                                step_days: float = STEP_DAYS,
                                med_kernel_hours: int = MED_KERNEL_HOURS) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
     """
-    1) Ресемплим (суммируем) точки в 1-часовые боксы (равномерная сетка).
-    2) Интерполируем небольшие пропуски линейно.
-    3) Строим медианный тренд (medfilt) и вычитаем его => detrended flux.
-    Возвращаем (grid_time, flux_detr) или (None, None) при неудаче.
+    1) Ресемплим в 1-часовые боксы
+    2) Интерполируем пропуски
+    3) Детренд медианным фильтром
     """
-    # Нужны хотя бы несколько точек
     if t is None or f is None or len(t) < 3:
         return None, None
 
-    # убираем NaN/Inf
     mask = np.isfinite(t) & np.isfinite(f)
     if not np.any(mask):
         return None, None
@@ -210,12 +187,10 @@ def resample_to_1h_and_detrend(t: np.ndarray, f: np.ndarray,
 
     tmin = float(np.min(t)); tmax = float(np.max(t))
     step = float(step_days)
-    # создаём grid (включительно)
     grid = np.arange(tmin, tmax + step / 2.0, step)
     if len(grid) < 3:
         return None, None
 
-    # индекс бина для каждой точки
     inds = np.floor((t - tmin) / step).astype(int)
     valid = (inds >= 0) & (inds < len(grid))
     if not np.any(valid):
@@ -223,32 +198,27 @@ def resample_to_1h_and_detrend(t: np.ndarray, f: np.ndarray,
     inds_valid = inds[valid]
     f_valid = f[valid].astype(float)
 
-    # суммирование значений в каждой клетке
     flux_grid = np.full(len(grid), np.nan, dtype=float)
     unique_inds = np.unique(inds_valid)
     for i in unique_inds:
         mask_i = inds_valid == i
         flux_grid[i] = np.sum(f_valid[mask_i])
 
-    # если все NaN — не годится
     nan_mask = np.isnan(flux_grid)
     if nan_mask.all():
         return None, None
 
-    # интерполяция пропусков (линейная)
     idx = np.arange(len(grid))
     notnan = ~nan_mask
     if nan_mask.any():
         flux_grid[nan_mask] = np.interp(idx[nan_mask], idx[notnan], flux_grid[notnan])
 
-    # детренд (median filter) — быстрый C-алгоритм
     kernel = _safe_kernel(med_kernel_hours)
     if kernel >= len(flux_grid):
         kernel = _safe_kernel(max(3, len(flux_grid) // 2))
     try:
         trend = medfilt(flux_grid, kernel_size=kernel)
     except Exception:
-        # fallback к savgol
         wl = kernel if kernel % 2 == 1 else kernel + 1
         if wl >= len(flux_grid):
             wl = max(3, len(flux_grid) - (1 - (len(flux_grid) % 2)))
@@ -257,14 +227,8 @@ def resample_to_1h_and_detrend(t: np.ndarray, f: np.ndarray,
     flux_detr = flux_grid - trend
     return grid, flux_detr
 
-# -------------------------
-# Нормализация/очистка имён колонок (как в обучении)
-# -------------------------
 def clean_column_name(col: str) -> str:
-    """
-    Убирает проблемные символы из имён колонок, делает их совместимыми с обучением/JSON.
-    Это та же функция, что ты использовал в notebook.
-    """
+    """Очистка имён колонок от спецсимволов."""
     clean = col.replace('"', '').replace("'", '').replace('\\', '')
     clean = clean.replace('[', '').replace(']', '')
     clean = clean.replace('{', '').replace('}', '')
@@ -273,53 +237,38 @@ def clean_column_name(col: str) -> str:
     clean = re.sub('_+', '_', clean)
     clean = clean.strip('_')
     return clean
-# -------------------------
-# Функции для обнаружения подозрительных регионов (транзитов)
-# -------------------------
+
 def detect_suspicious_regions(time: np.ndarray, flux: np.ndarray, 
                               num_regions: int = 5) -> List[dict]:
-    """
-    Обнаруживает подозрительные регионы (возможные транзиты) в световой кривой.
-    Возвращает список словарей с информацией о регионах.
-    """
+    """Обнаруживает подозрительные регионы (возможные транзиты)."""
     if len(time) < 10:
         return []
     
-    # Находим отрицательные аномалии (провалы в яркости)
     flux_median = np.median(flux)
     flux_std = np.std(flux)
-    
-    # Используем скользящее окно для поиска провалов
-    window_size = max(5, len(flux) // 100)  # ~1% от длины
+    window_size = max(5, len(flux) // 100)
     
     anomaly_scores = []
     for i in range(len(flux)):
         start = max(0, i - window_size // 2)
         end = min(len(flux), i + window_size // 2)
         window = flux[start:end]
-        
-        # Считаем, насколько этот регион отличается от медианы
         window_median = np.median(window)
-        score = flux_median - window_median  # Положительное = провал
+        score = flux_median - window_median
         anomaly_scores.append(score)
     
     anomaly_scores = np.array(anomaly_scores)
-    
-    # Находим пики аномалий
     threshold = flux_std * 1.5
     candidates = []
     
     i = 0
     while i < len(anomaly_scores):
         if anomaly_scores[i] > threshold:
-            # Нашли начало аномалии
             start_idx = i
-            # Ищем конец
             while i < len(anomaly_scores) and anomaly_scores[i] > threshold * 0.5:
                 i += 1
             end_idx = i
             
-            # Расширяем регион для контекста
             margin = (end_idx - start_idx) * 2
             region_start = max(0, start_idx - margin)
             region_end = min(len(time), end_idx + margin)
@@ -333,36 +282,83 @@ def detect_suspicious_regions(time: np.ndarray, flux: np.ndarray,
             })
         i += 1
     
-    # Сортируем по глубине провала
     candidates.sort(key=lambda x: x['depth'], reverse=True)
-    
-    # Возвращаем топ N регионов
     return candidates[:num_regions]
 
+def detect_quarters_from_gaps(time: np.ndarray, flux: np.ndarray, 
+                              gap_threshold_days: float = 5.0) -> List[dict]:
+    """
+    Автоматично визначає квартали (quarters/сегменти) на основі великих розривів у часі.
+    
+    Parameters:
+    -----------
+    time : np.ndarray
+        Масив часу (в днях)
+    flux : np.ndarray
+        Масив потоку
+    gap_threshold_days : float
+        Мінімальний розрив (в днях) між кварталами. За замовчуванням 5 днів.
+    
+    Returns:
+    --------
+    List[dict] : Список сегментів з полями index, start, end, center, n_points
+    """
+    if len(time) < 2:
+        return []
+    
+    # Знаходимо різниці між послідовними точками
+    time_diffs = np.diff(time)
+    
+    # Знаходимо індекси, де різниця більша за поріг (це межі кварталів)
+    gap_indices = np.where(time_diffs > gap_threshold_days)[0]
+    
+    # Створюємо список початків кварталів
+    # gap_indices[i] - це останній індекс ПЕРЕД розривом
+    # gap_indices[i] + 1 - це перший індекс ПІСЛЯ розриву
+    quarter_starts = [0]  # Перший квартал починається з 0
+    for gap_idx in gap_indices:
+        quarter_starts.append(gap_idx + 1)
+    
+    # Створюємо сегменти
+    segments = []
+    for i, start_idx in enumerate(quarter_starts):
+        # Визначаємо кінець квартала
+        if i < len(quarter_starts) - 1:
+            end_idx = quarter_starts[i + 1] - 1
+        else:
+            end_idx = len(time) - 1
+        
+        # Часові межі
+        t_start = float(time[start_idx])
+        t_end = float(time[end_idx])
+        t_center = (t_start + t_end) / 2.0
+        n_points = end_idx - start_idx + 1
+        
+        segments.append({
+            'index': i,
+            'start': t_start,
+            'end': t_end,
+            'center': t_center,
+            'n_points': n_points,
+            'start_idx': int(start_idx),
+            'end_idx': int(end_idx)
+        })
+    
+    return segments
 
 def calculate_folded_curve(time: np.ndarray, flux: np.ndarray, 
                            period: Optional[float] = None) -> dict:
-    """
-    Создаёт фазовую складку (phase-folded curve) для поиска периодических сигналов.
-    Если period не указан, пытается оценить его автоматически.
-    """
+    """Создаёт phase-folded curve."""
     if len(time) < 10:
         return {'phase': [], 'flux': [], 'period': 0}
     
-    # Простая оценка периода через автокорреляцию (для демонстрации)
     if period is None:
-        # Берём первый подозрительный регион как оценку периода
-        # В реальности тут нужен более сложный алгоритм (BLS, Lomb-Scargle и т.д.)
-        # Для простоты используем среднее расстояние между провалами
-        period = (np.max(time) - np.min(time)) / 10.0  # грубая оценка
+        period = (np.max(time) - np.min(time)) / 10.0
     
     if period <= 0:
         period = 1.0
     
-    # Фазовая складка
     phase = np.mod(time - np.min(time), period) / period
-    
-    # Сортируем по фазе
     sort_idx = np.argsort(phase)
     phase_sorted = phase[sort_idx]
     flux_sorted = flux[sort_idx]
@@ -372,47 +368,36 @@ def calculate_folded_curve(time: np.ndarray, flux: np.ndarray,
         'flux': flux_sorted.tolist(),
         'period': float(period)
     }
+
 def detect_transit_candidates(time: np.ndarray, flux: np.ndarray, n_candidates: int = 20,
                               min_prominence: float = None, min_width_pts: int = 2,
                               min_snr: float = 3.0) -> List[dict]:
-    """
-    Более робастная детекция транзитов:
-     - инвертируем flux, ищем пики
-     - используем prominence и width (scipy.signal.peak_widths)
-     - фильтруем по SNR (depth / local MAD)
-     - объединяем близкие пики в один кандидат (clustering by proximity)
-    """
+    """Робастная детекция транзитов."""
     candidates = []
     if len(time) < 10:
         return candidates
 
     inv = -flux
-    # robust noise estimator (MAD)
     mad = median_abs_deviation(flux, scale='normal')
     if mad == 0:
         mad = np.std(flux) if np.std(flux) > 0 else 1.0
 
-    # default prominence threshold — proportional to MAD if not given
     if min_prominence is None:
         min_prominence = 2.0 * mad
 
-    # find peaks on inverted signal (so dips become peaks)
     peaks, props = find_peaks(inv, prominence=min_prominence, distance=3)
     if len(peaks) == 0:
         return []
 
-    # compute widths (in samples)
     widths_res = peak_widths(inv, peaks, rel_height=0.5)
-    widths = widths_res[0]  # widths in samples
+    widths = widths_res[0]
     left_ips = widths_res[2].astype(int)
     right_ips = widths_res[3].astype(int)
 
-    # assemble preliminary candidates
     prelim = []
     for i, p in enumerate(peaks):
-        depth = float(props['prominences'][i])  # prominence ~ depth in inverted signal
+        depth = float(props['prominences'][i])
         width_pts = int(max(1, np.round(widths[i])))
-        # local SNR estimate
         snr = depth / (mad if mad > 0 else 1.0)
         prelim.append({
             'peak_idx': int(p),
@@ -424,13 +409,10 @@ def detect_transit_candidates(time: np.ndarray, flux: np.ndarray, n_candidates: 
             'snr': float(snr)
         })
 
-    # filter by simple criteria
     filtered = [c for c in prelim if c['width_pts'] >= min_width_pts and c['snr'] >= min_snr]
     if not filtered:
-        # if nothing, relax thresholds a bit to avoid empty result
         filtered = prelim
 
-    # cluster nearby peaks into single candidate (if centers closer than median width)
     if filtered:
         widths_list = [c['width_pts'] for c in filtered]
         med_width = max(1, int(np.median(widths_list)))
@@ -439,7 +421,6 @@ def detect_transit_candidates(time: np.ndarray, flux: np.ndarray, n_candidates: 
         current = filtered_sorted[0].copy()
         for c in filtered_sorted[1:]:
             if abs(c['center'] - current['center']) <= (med_width * 1.0 * (time[1] - time[0])):
-                # merge: keep deeper depth, expand left/right
                 current['depth'] = max(current['depth'], c['depth'])
                 current['left_idx'] = min(current['left_idx'], c['left_idx'])
                 current['right_idx'] = max(current['right_idx'], c['right_idx'])
@@ -452,7 +433,6 @@ def detect_transit_candidates(time: np.ndarray, flux: np.ndarray, n_candidates: 
     else:
         clusters = []
 
-    # prepare final candidates sorted by depth (desc)
     clusters_sorted = sorted(clusters, key=lambda x: x['depth'], reverse=True)[:n_candidates]
     final = []
     for c in clusters_sorted:
@@ -472,57 +452,49 @@ def detect_transit_candidates(time: np.ndarray, flux: np.ndarray, n_candidates: 
         })
 
     return final
+
 # -------------------------
 # Основной эндпоинт /predict
 # -------------------------
 @app.post("/predict")
 async def predict(files: List[UploadFile] = File(...)):
     """
-    Принимает один или несколько FITS-файлов (все они - одна целевая звезда, разные кварталы).
-    Возвращает JSON:
-      - exoplanet: True/False
-      - probability: float
-      - features: list of top-20 {name, value}
-      - raw_curve: {time: [...], flux: [...]}
-      - processed_curve: {time: [...], flux: [...]}
+    Принимает FITS-файлы и возвращает предсказание экзопланеты.
     """
-    # --- Валидация входа
+    # ✅ ЛОКАЛЬНАЯ ПЕРЕМЕННАЯ для подсчёта FITS файлов
+    fits_count = 0
+    
     if not files or len(files) == 0:
         raise HTTPException(status_code=400, detail="No files uploaded")
 
-    # Списки для объединения всех кварталов
     time_list = []
     flux_list = []
 
-    # Читаем каждый FITS (как bytes), извлекаем TIME и (сырой) FLUX
     for uploaded in files:
         filename = uploaded.filename
-        # проверяем расширение
         if not filename.lower().endswith('.fits'):
             raise HTTPException(status_code=400, detail=f"Unsupported file type: {filename}")
         try:
             fb = await uploaded.read()
             t_part, f_part = read_time_flux_from_fitsbytes(fb)
-            # добавим части в списки
             if t_part is not None and f_part is not None and len(t_part) > 0:
                 time_list.append(t_part)
                 flux_list.append(f_part)
+                # ✅ УВЕЛИЧИВАЕМ СЧЁТЧИК для каждого успешно прочитанного файла
+                fits_count += 1
         except Exception as e:
-            # если один FITS 못 прочитать — возвращаем информативную ошибку
             raise HTTPException(status_code=400, detail=f"Error reading {filename}: {str(e)}")
 
-    # Конкатенируем все кварталы
     if len(time_list) == 0:
         raise HTTPException(status_code=400, detail="No valid time/flux data found in uploaded files.")
+    
     tcat = np.concatenate(time_list)
     fcat = np.concatenate(flux_list)
 
-    # сортируем по времени (на случай, если кварталы перепутаны)
     order = np.argsort(tcat)
     tcat = tcat[order]
     fcat = fcat[order]
 
-    # Быстрая очистка: удаление NaN/Inf
     mask_good = np.isfinite(tcat) & np.isfinite(fcat)
     tcat = tcat[mask_good]
     fcat = fcat[mask_good]
@@ -530,23 +502,19 @@ async def predict(files: List[UploadFile] = File(...)):
     if len(tcat) < MIN_POINTS_AFTER_CLEAN:
         raise HTTPException(status_code=400, detail=f"Not enough valid points after cleaning: {len(tcat)}")
 
-    # Сохраним исходную (сырую) кривую для графика (преобразуем в списки)
     raw_curve_time = tcat.tolist()
     raw_curve_flux = fcat.tolist()
 
-    # Optional: удаление очевидных одиночных выбросов (простая версия)
     if len(fcat) > 5:
         med = np.median(fcat)
         mad = np.median(np.abs(fcat - med))
         if mad == 0:
             mad = np.std(fcat) if np.std(fcat) > 0 else 1.0
-        # отметим точки, которые сильно выше median (всплески) и удалим их
-        spike_mask = (np.abs(fcat - med) < 10 * mad)  # порог 10*MAD — консервативно
+        spike_mask = (np.abs(fcat - med) < 10 * mad)
         if spike_mask.sum() < len(spike_mask):
             tcat = tcat[spike_mask]
             fcat = fcat[spike_mask]
 
-    # Ресемплинг и детренд (тот же алгоритм, что в pipeline)
     grid, flux_detr = resample_to_1h_and_detrend(tcat, fcat, step_days=STEP_DAYS, med_kernel_hours=MED_KERNEL_HOURS)
     if grid is None or flux_detr is None:
         raise HTTPException(status_code=500, detail="Failed to resample/detrend signal")
@@ -554,98 +522,73 @@ async def predict(files: List[UploadFile] = File(...)):
     if len(flux_detr) < MIN_POINTS_AFTER_CLEAN:
         raise HTTPException(status_code=400, detail=f"Too few points after resampling/detrending: {len(flux_detr)}")
 
-    # Сохранение обработанной кривой (для графика)
     processed_curve_time = grid.tolist()
     processed_curve_flux = flux_detr.tolist()
 
-    
-    # --- Подготовка DataFrame для tsfresh: id=1, time индекс 0..N-1, value=flux_detr
     df_tsf = pd.DataFrame({
         'id': 1,
         'time': np.arange(len(flux_detr), dtype=float),
         'flux': flux_detr
     })
 
-    # Иногда tsfresh может быть капризен, но в общем для одного ряда всё ок
-    # Экстракт признаков (EfficientFCParameters — как в pipeline)
     try:
         X_feats = extract_features(df_tsf, column_id='id', column_sort='time', column_value='flux',
                                    default_fc_parameters=TSFRESH_PARAMS, n_jobs=TSFRESH_N_JOBS)
     except Exception as e:
-        # Если tsfresh упал, возвращаем понятную ошибку
         raise HTTPException(status_code=500, detail=f"tsfresh extract_features failed: {str(e)}")
 
-    # Заполним NaN нулями (как safety)
     X_feats = X_feats.fillna(0)
-
-    # Приведём имена колонок к формату, как при обучении
     X_feats.columns = [clean_column_name(c) for c in X_feats.columns]
 
-    # Убедимся, что все колонки, на которых обучалась модель, присутствуют
-    # Если каких-то нет — добавляем колонку со значением 0
-    # Также сохраняем порядок колонок в feature_cols (важно для модели)
     missing_cols = [c for c in FEATURE_COLS if c not in X_feats.columns]
     if missing_cols:
         for c in missing_cols:
-            X_feats[c] = 0.0  # ставим 0 если фича не рассчиталась
-    # Режектируем только используемые колонки и в нужном порядке
+            X_feats[c] = 0.0
     X_new = X_feats.reindex(columns=FEATURE_COLS, fill_value=0.0)
 
-    # Масштабирование: только по непрерывным колонкам (RobustScaler)
-    # Проверяем, что continouos cols существуют в X_new
     cont_cols_present = [c for c in CONTINOUS_COLS if c in X_new.columns]
-    bin_cols_present = [c for c in BINARY_COLS if c in X_new.columns]
-    # Если каких-то непрерывных колонок нет — они уже добавлены нулями выше
     if len(cont_cols_present) > 0:
         try:
             X_new.loc[:, cont_cols_present] = scaler.transform(X_new[cont_cols_present])
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Scaler transform failed: {str(e)}")
 
-    # Предсказание: модель LightGBM ожидает двумерный массив
     try:
-        proba = model.predict(X_new)  # возвращает массив вероятностей
+        proba = model.predict(X_new)
         proba_val = float(proba[0])
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Model prediction failed: {str(e)}")
 
     is_exo = bool(proba_val > 0.497)
 
-    # Получение топ-20 важнейших признаков по importance (gain)
     try:
         importances = model.feature_importance(importance_type='gain')
-        # Zip (feature_name, importance) — FEATURE_COLS соответствует порядку в обучении
         feat_imp_pairs = list(zip(FEATURE_COLS, importances))
-        # Сортировка по важности
         feat_imp_pairs_sorted = sorted(feat_imp_pairs, key=lambda x: x[1], reverse=True)
         top_k = feat_imp_pairs_sorted[:20]
-        # Подготавливаем список словарей {name, value, importance}
         top_features_list = []
         for name, imp in top_k:
             val = float(X_new.iloc[0].get(name, 0.0))
             top_features_list.append({'name': name, 'value': val, 'importance': float(imp)})
     except Exception:
-        # В случае ошибки — формируем пустой список
         top_features_list = []
+    
     suspicious_regions = detect_suspicious_regions(grid, flux_detr, num_regions=5)
     
-    # Фазовая складка (используем оценочный период из первого региона или автоматический)
     estimated_period = None
-    if suspicious_regions and len(suspicious_regions) > 0:
-        # Простая оценка: расстояние между двумя самыми сильными регионами
-        if len(suspicious_regions) >= 2:
-            estimated_period = abs(suspicious_regions[1]['center'] - suspicious_regions[0]['center'])
+    if suspicious_regions and len(suspicious_regions) >= 2:
+        estimated_period = abs(suspicious_regions[1]['center'] - suspicious_regions[0]['center'])
     
     folded_data = calculate_folded_curve(grid, flux_detr, period=estimated_period)
+    
     try:
         transit_candidates = detect_transit_candidates(grid, flux_detr, n_candidates=5)
     except Exception:
         transit_candidates = []
 
-
-        # сегменты (quarters) — простое равномерное разбиение
+    # ✅ Сегменты создаются ЛОКАЛЬНО на основе ЛОКАЛЬНОГО счётчика
     try:
-        num_segments = FITS_value
+        num_segments = fits_count  # используем локальную переменную
         segs = []
         tmin = float(grid[0]); tmax = float(grid[-1])
         for si in range(num_segments):
@@ -655,18 +598,18 @@ async def predict(files: List[UploadFile] = File(...)):
     except Exception:
         segs = []
 
-    # Формируем JSON-ответ
+    # ✅ Формируем НОВЫЙ результат для каждого запроса
     result = {
         'exoplanet': is_exo,
         'probability': proba_val,
         'features': top_features_list,
         'raw_curve': {'time': raw_curve_time, 'flux': raw_curve_flux},
         'processed_curve': {'time': processed_curve_time, 'flux': processed_curve_flux},
-        'FITS_value': FITS_value,
+        'FITS_value': fits_count,  # ✅ локальная переменная
+        'suspicious_regions': suspicious_regions,
+        'folded_curve': folded_data,
+        'transit_candidates': transit_candidates,
+        'segments': segs
     }
-    result['suspicious_regions'] = suspicious_regions
-    result['folded_curve'] = folded_data
-    result['transit_candidates'] = transit_candidates
-    result['segments'] = segs
 
     return JSONResponse(result)

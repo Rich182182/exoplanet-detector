@@ -92,49 +92,79 @@ const LightCurveChart: React.FC<Props> = ({
   const binnedProcessed = useMemo(() => makeBinned(processedCurve, 600), [processedCurve]);
 
   // local detector (frontend)
-  const detectLocalCandidates = (curve: { time: number[]; flux: number[] }) : TransitCandidate[] => {
-    const t = curve.time;
-    const f = curve.flux;
-    if (t.length < 20) return [];
-    const win = Math.max(3, Math.round(t.length / 300));
-    const smooth: number[] = [];
-    for (let i = 0; i < f.length; i++) {
-      let s = 0, cnt = 0;
-      for (let j = i - win; j <= i + win; j++) {
-        if (j >= 0 && j < f.length) { s += f[j]; cnt++; }
-      }
-      smooth.push(s / cnt);
-    }
-    const inv = smooth.map(v => -v);
-    const sorted = inv.slice().sort((a,b) => a - b);
-    const median = sorted[Math.floor(sorted.length / 2)];
-    const absdev = sorted.map(v => Math.abs(v - median));
-    const mad = absdev.sort((a,b)=>a-b)[Math.floor(absdev.length/2)] || 0.0;
-    const threshold = median + Math.max(1.5 * mad, 0.0001);
-    const candidatesIdx: number[] = [];
-    const minDistPts = Math.max(3, Math.round(win * 1.5));
-    for (let i = 1; i < inv.length - 1; i++) {
-      if (inv[i] <= threshold) continue;
-      if (inv[i] > inv[i-1] && inv[i] >= inv[i+1]) {
-        if (candidatesIdx.length > 0 && (i - candidatesIdx[candidatesIdx.length - 1]) < minDistPts) {
-          if (inv[i] > inv[candidatesIdx[candidatesIdx.length - 1]]) candidatesIdx[candidatesIdx.length - 1] = i;
-        } else {
-          candidatesIdx.push(i);
-        }
-      }
-    }
-    const results: TransitCandidate[] = candidatesIdx.map(idx => {
-      const left = Math.max(0, idx - win*2);
-      const right = Math.min(t.length - 1, idx + win*2);
-      const center_time = t[idx];
-      const start_time = t[left];
-      const end_time = t[right];
-      const depth = inv[idx] - median;
-      const score = mad > 0 ? (depth / mad) : depth;
-      return { center_time, start_time, end_time, depth, score };
-    });
-    return results.sort((a,b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 20);
+  // Замените текущую функцию detectLocalCandidates на этот код
+// Улучшенный detectLocalCandidates — меньше ложных срабатываний, параметризуемо
+const detectLocalCandidates = (curve: { time: number[]; flux: number[] }, nCandidates = 25): TransitCandidate[] => {
+  const t = curve.time;
+  const f = curve.flux;
+  const N = t.length;
+  if (N < 10) return [];
+
+  // --- Вспомогательные функции ---
+  const median = (arr: number[]) => {
+    const a = arr.slice().sort((x, y) => x - y);
+    const m = Math.floor(a.length / 2);
+    return (a.length % 2 === 1) ? a[m] : 0.5 * (a[m - 1] + a[m]);
   };
+
+  const medianAbsoluteDeviation = (arr: number[]) => {
+    const med = median(arr);
+    const devs = arr.map(v => Math.abs(v - med));
+    const madRaw = median(devs);
+    return madRaw * 1.4826; // scale ~ scipy
+  };
+
+  // --- Инвертируем flux для поиска впадин ---
+  const inverted = f.map(v => -v);
+
+  // --- Порог ---
+  let mad = medianAbsoluteDeviation(inverted);
+  if (!Number.isFinite(mad) || mad === 0) {
+    const mean = f.reduce((a, b) => a + b, 0) / N;
+    const variance = f.reduce((a, b) => a + (b - mean) ** 2, 0) / Math.max(1, N - 1);
+    mad = Math.sqrt(variance) || 1e-6;
+  }
+  const threshold = 2 * mad; // детектируем провалы глубже 2*MAD
+
+  // --- Находим локальные максимумы (пики инвертированной кривой) ---
+  const rawPeaks: number[] = [];
+  const minDistPts = Math.max(5, Math.round(N / 150)); // минимальное расстояние между пиками
+  for (let i = 1; i < N - 1; i++) {
+    if (inverted[i] > inverted[i - 1] && inverted[i] >= inverted[i + 1] && inverted[i] > threshold) {
+      // проверяем на расстояние до предыдущего пика
+      if (rawPeaks.length === 0 || i - rawPeaks[rawPeaks.length - 1] >= minDistPts) {
+        rawPeaks.push(i);
+      } else {
+        // если два пика слишком близко, оставляем сильнейший
+        const last = rawPeaks[rawPeaks.length - 1];
+        if (inverted[i] > inverted[last]) rawPeaks[rawPeaks.length - 1] = i;
+      }
+    }
+  }
+
+  // --- Формируем кандидатов с границами ±windowSize ---
+  const windowSize = Math.min(Math.max(8, Math.round(N / 100)), 20);
+  const candidates: TransitCandidate[] = rawPeaks.map(idx => {
+    const startIdx = Math.max(0, idx - windowSize);
+    const endIdx = Math.min(N - 1, idx + windowSize);
+    const depth = inverted[idx];
+    return {
+      center_time: t[idx],
+      start_time: t[startIdx],
+      end_time: t[endIdx],
+      depth,
+      score: depth / mad // простая нормализация
+    };
+  });
+
+  // сортируем по score и ограничиваем nCandidates
+  candidates.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+  return candidates.slice(0, nCandidates);
+};
+
+
+
+
 
   useEffect(() => {
     const handler = () => {
@@ -171,10 +201,9 @@ const LightCurveChart: React.FC<Props> = ({
   useEffect(() => {
     const canvas = canvasRef.current; if (!canvas) return;
     const ctx = canvas.getContext('2d'); if (!ctx) return;
-    const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
-    canvas.width = Math.max(1, rect.width) * dpr; canvas.height = Math.max(1, rect.height) * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    canvas.width = Math.max(1, rect.width) * window.devicePixelRatio || 1; canvas.height = Math.max(1, rect.height) * window.devicePixelRatio || 1;
+    ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
 
     const W = rect.width, H = rect.height;
     const pad = { l: 56, r: 12, t: 18, b: 30 };
@@ -192,7 +221,45 @@ const LightCurveChart: React.FC<Props> = ({
     const scaleY = (f:number) => pad.t + ch - ((f - fmin)/(fmax - fmin)) * ch;
 
     // SEGMENTS background
-    segments.forEach(s => {
+    // ЗАМЕНИТЕ СТАРЫЙ БЛОК transitCandidates.forEach(...) НА ЭТО
+
+// helper: choose the exact curve that is drawn (so markers align with displayed points)
+const displayedCurve = (showProcessed ? (showBinned ? binnedProcessed : processedCurve) : rawCurve);
+
+// helper: binary search + linear interpolation on displayedCurve.time -> returns X in canvas coords
+function timeToX_onDisplayed(timeVal: number) {
+  const arrT = displayedCurve.time;
+  const n = arrT.length;
+  if (n === 0) return scaleX(timeVal);
+  if (timeVal <= arrT[0]) return scaleX(arrT[0]);
+  if (timeVal >= arrT[n - 1]) return scaleX(arrT[n - 1]);
+
+  // binary search
+  let lo = 0, hi = n - 1;
+  while (hi - lo > 1) {
+    const mid = (lo + hi) >> 1;
+    if (arrT[mid] <= timeVal) lo = mid;
+    else hi = mid;
+  }
+  const t0 = arrT[lo], t1 = arrT[hi];
+  const frac = (timeVal - t0) / (t1 - t0 || 1e-9);
+  const x0 = scaleX(t0), x1 = scaleX(t1);
+  return x0 + (x1 - x0) * frac;
+}
+
+// device pixel alignment helper — делает линию чёткой
+const dpr = window.devicePixelRatio || 1;
+function alignPixel(value: number, lineWidth = 1) {
+  // Если линия нечётная ширины (1,3...) — добавляем 0.5 для попадания в центр пикселя
+  const lw = Math.max(1, Math.round(lineWidth));
+  const add = (lw % 2 === 1) ? (0.5 / dpr) : 0;
+  return Math.round(value * dpr) / dpr + add;
+}
+
+// единые настройки текста
+ctx.textAlign = 'left';
+ctx.textBaseline = 'middle';
+segments.forEach(s => {
       if (s.end < vr[0] || s.start > vr[1]) return;
       const x1 = scaleX(Math.max(s.start, vr[0]));
       const x2 = scaleX(Math.min(s.end, vr[1]));
@@ -204,6 +271,45 @@ const LightCurveChart: React.FC<Props> = ({
       ctx.fillText('start', Math.max(pad.l + 4, x1 + 4), pad.t + 12);
       ctx.fillText('end', Math.max(pad.l + 4, x2 - 24), pad.t + 12);
     });
+
+transitCandidates.forEach((c, idx) => {
+  if (c.end_time < vr[0] || c.start_time > vr[1]) return;
+
+  // 1) X по той же сетке, что и рисованная кривая
+  let cx = timeToX_onDisplayed(c.center_time);
+
+  // 2) привязка к пиксельной сетке для чётких линий/кругов
+  const lineW = 2; // используем 2 — как в твоём коде
+  cx = alignPixel(cx, lineW);
+
+  // 3) vertical marker line (чёткая)
+  ctx.strokeStyle = idx === selectedCandidate ? 'rgba(255,99,90,0.95)' : 'rgba(255,190,60,0.95)';
+  ctx.lineWidth = lineW;
+  ctx.beginPath();
+  ctx.moveTo(cx, pad.t + 6);
+  ctx.lineTo(cx, pad.t + 18);
+  ctx.stroke();
+
+  // 4) center dot
+  ctx.fillStyle = idx === selectedCandidate ? 'rgba(255,99,90,1)' : 'rgba(255,190,60,1)';
+  ctx.beginPath();
+  ctx.arc(cx, pad.t + 6, 3.2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 5) labels — выравнивание единообразное
+  ctx.font = '11px Inter, system-ui';
+  ctx.fillStyle = '#eaf7f4';
+  ctx.fillText(`#${idx + 1}`, cx + 6, pad.t + 10);
+
+  ctx.font = '10px Inter, system-ui';
+  ctx.fillStyle = 'rgba(200,220,230,0.8)';
+  ctx.fillText(`${(c.depth).toFixed(3)}`, cx + 6, pad.t + 22);
+});
+
+// вернуть выравнивание текста по умолчанию, если нужно дальше использовать другие значения
+ctx.textAlign = 'start';
+ctx.textBaseline = 'alphabetic';
+
 
     const drawLine = (pts: {t:number;f:number}[], color: string, width = 1.6, dash: number[] | null = null, alpha = 1) => {
       ctx.save();
@@ -219,9 +325,9 @@ const LightCurveChart: React.FC<Props> = ({
 
     if (showRaw) {
       const rawPts = getPts(rawCurve);
-      if (rawPts.length) drawLine(rawPts, 'rgba(180,200,210,0.22)', 1.2, null, 0.9);
+      if (rawPts.length) drawLine(rawPts, 'rgba(54, 209, 195, 1)', 1.2, null, 0.9);
     }
-    if (showProcessed) drawLine(getPts(processedCurve), '#36d1c3', 1.8, null, 1);
+    if (showProcessed) drawLine(getPts(processedCurve), 'rgba(54, 209, 195, 1)', 1.8, null, 1);
     if (showBinned) drawLine(getPts(binnedProcessed), '#2bb9a9', 2.4, [6,4], 1);
 
     // axes ticks
@@ -232,26 +338,77 @@ const LightCurveChart: React.FC<Props> = ({
     ctx.textAlign = 'start';
 
     // transit centers
-    transitCandidates.forEach((c, idx) => {
-      if (c.end_time < vr[0] || c.start_time > vr[1]) return;
-      const cx = scaleX(c.center_time);
-      ctx.strokeStyle = idx === selectedCandidate ? 'rgba(255,99,90,0.95)' : 'rgba(255,190,60,0.95)';
-      ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(cx, pad.t + 6); ctx.lineTo(cx, pad.t + 18); ctx.stroke();
-      ctx.fillStyle = idx === selectedCandidate ? 'rgba(255,99,90,1)' : 'rgba(255,190,60,1)';
-      ctx.beginPath(); ctx.arc(cx, pad.t + 6, 3.2, 0, Math.PI * 2); ctx.fill();
-      ctx.font = '11px Inter, system-ui';
-      ctx.fillStyle = '#eaf7f4';
-      ctx.fillText(`#${idx + 1}`, cx + 6, pad.t + 10);
-      ctx.font = '10px Inter, system-ui';
-      ctx.fillStyle = 'rgba(200,220,230,0.8)';
-      ctx.fillText(`${(c.depth).toFixed(3)}`, cx + 6, pad.t + 22);
-    });
+    // helper: map arbitrary time to X using interpolation on the processedCurve.time array
+function timeToXInterpolated(timeVal: number) {
+  // use processedCurve.time (fallback to rawCurve.time if needed)
+  const arrT = (showProcessed ? processedCurve.time : rawCurve.time);
+  const n = arrT.length;
+  if (n === 0) return scaleX(timeVal); // fallback
+
+  // if outside range, just map linearly
+  if (timeVal <= arrT[0]) return scaleX(arrT[0]);
+  if (timeVal >= arrT[n - 1]) return scaleX(arrT[n - 1]);
+
+  // binary search for interval
+  let lo = 0, hi = n - 1;
+  while (hi - lo > 1) {
+    const mid = (lo + hi) >> 1;
+    if (arrT[mid] <= timeVal) lo = mid;
+    else hi = mid;
+  }
+  // linear interpolate between arrT[lo] and arrT[hi]
+  const t0 = arrT[lo], t1 = arrT[hi];
+  const frac = (timeVal - t0) / (t1 - t0 || 1e-9);
+  const x0 = scaleX(t0), x1 = scaleX(t1);
+  return x0 + (x1 - x0) * frac;
+}
+
+// draw transit centers using interpolated X and crisp alignment
+transitCandidates.forEach((c, idx) => {
+  if (c.end_time < vr[0] || c.start_time > vr[1]) return;
+
+  // use interpolated X instead of naive scaleX(c.center_time)
+  let cx = timeToXInterpolated(c.center_time);
+
+  // round to nearest device pixel for crisper vertical lines/dots
+  // If you used ctx.setTransform(dpr,0,0,dpr,0,0) earlier, rounding in CSS pixels is fine:
+  cx = Math.round(cx) + 0.5; // 0.5 helps 1px lines land on pixel centers (adjust if lineWidth>1)
+
+  // vertical marker line
+  ctx.strokeStyle = idx === selectedCandidate ? 'rgba(255,99,90,0.95)' : 'rgba(255,190,60,0.95)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(cx, pad.t + 6);
+  ctx.lineTo(cx, pad.t + 18);
+  ctx.stroke();
+
+  // center dot (rounded cx)
+  ctx.fillStyle = idx === selectedCandidate ? 'rgba(255,99,90,1)' : 'rgba(255,190,60,1)';
+  ctx.beginPath();
+  ctx.arc(cx, pad.t + 6, 3.2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // labels: ensure predictable alignment
+  ctx.font = '11px Inter, system-ui';
+  ctx.fillStyle = '#eaf7f4';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(`#${idx + 1}`, cx + 6, pad.t + 10);
+
+  ctx.font = '10px Inter, system-ui';
+  ctx.fillStyle = 'rgba(200,220,230,0.8)';
+  ctx.fillText(`${(c.depth).toFixed(3)}`, cx + 6, pad.t + 22);
+
+  // restore textBaseline/alignment if you rely on defaults later
+  ctx.textAlign = 'start';
+  ctx.textBaseline = 'alphabetic';
+});
+
 
     // hover tooltip
     if (hover) {
       const x = scaleX(hover.time), y = scaleY(hover.flux);
-      ctx.strokeStyle = 'rgba(255,99,90,0.9)'; ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(255,99,90,0.9)'; ctx.lineWidth = 0.8;
       ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, pad.t + ch); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + cw, y); ctx.stroke();
       const txt = `T ${hover.time.toFixed(3)}, F ${hover.flux.toFixed(2)}`;
@@ -287,7 +444,7 @@ const LightCurveChart: React.FC<Props> = ({
     const fmax = Math.max(...(showProcessed ? processedCurve.flux : rawCurve.flux));
     const sx = (t:number) => ((t - tmin) / (tmax - tmin)) * W;
     const sy = (f:number) => H - ((f - fmin) / (fmax - fmin)) * H;
-    ctx.strokeStyle = 'rgba(120,140,160,0.12)'; ctx.lineWidth = 1; ctx.beginPath();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)'; ctx.lineWidth = 1; ctx.beginPath();
     const arrT = showProcessed ? processedCurve.time : rawCurve.time;
     const arrF = showProcessed ? processedCurve.flux : rawCurve.flux;
     arrT.forEach((tt,i) => { const x = sx(tt), y = sy(arrF[i]); if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
