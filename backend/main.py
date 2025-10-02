@@ -15,7 +15,8 @@ FastAPI backend для локального использования.
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-
+from scipy.signal import find_peaks
+from scipy.stats import median_abs_deviation
 import numpy as np
 import pandas as pd
 import joblib
@@ -45,6 +46,7 @@ MED_KERNEL_HOURS = 25             # kernel для медфильтра (нечё
 MIN_POINTS_AFTER_CLEAN = 50       # если после очистки мало точек — отклоняем
 TSFRESH_PARAMS = EfficientFCParameters()  # используем Efficient набор признаков
 TSFRESH_N_JOBS = 1                # для одного примера достаточно 1 процесса
+FITS_value = 0
 
 # CORS origins (frontend локально)
 FRONTEND_ORIGINS = ["http://localhost:3000"]
@@ -107,6 +109,7 @@ def _find_time_and_flux_in_hdu(hdu) -> Tuple[Optional[str], Optional[str]]:
     Возвращает имена колонок (time_col, flux_col) или (None,None).
     Используем гибкий поиск, учитывая возможные имена.
     """
+    FITS_value = +1
     names = []
     try:
         names = [n for n in hdu.names]
@@ -270,7 +273,205 @@ def clean_column_name(col: str) -> str:
     clean = re.sub('_+', '_', clean)
     clean = clean.strip('_')
     return clean
+# -------------------------
+# Функции для обнаружения подозрительных регионов (транзитов)
+# -------------------------
+def detect_suspicious_regions(time: np.ndarray, flux: np.ndarray, 
+                              num_regions: int = 5) -> List[dict]:
+    """
+    Обнаруживает подозрительные регионы (возможные транзиты) в световой кривой.
+    Возвращает список словарей с информацией о регионах.
+    """
+    if len(time) < 10:
+        return []
+    
+    # Находим отрицательные аномалии (провалы в яркости)
+    flux_median = np.median(flux)
+    flux_std = np.std(flux)
+    
+    # Используем скользящее окно для поиска провалов
+    window_size = max(5, len(flux) // 100)  # ~1% от длины
+    
+    anomaly_scores = []
+    for i in range(len(flux)):
+        start = max(0, i - window_size // 2)
+        end = min(len(flux), i + window_size // 2)
+        window = flux[start:end]
+        
+        # Считаем, насколько этот регион отличается от медианы
+        window_median = np.median(window)
+        score = flux_median - window_median  # Положительное = провал
+        anomaly_scores.append(score)
+    
+    anomaly_scores = np.array(anomaly_scores)
+    
+    # Находим пики аномалий
+    threshold = flux_std * 1.5
+    candidates = []
+    
+    i = 0
+    while i < len(anomaly_scores):
+        if anomaly_scores[i] > threshold:
+            # Нашли начало аномалии
+            start_idx = i
+            # Ищем конец
+            while i < len(anomaly_scores) and anomaly_scores[i] > threshold * 0.5:
+                i += 1
+            end_idx = i
+            
+            # Расширяем регион для контекста
+            margin = (end_idx - start_idx) * 2
+            region_start = max(0, start_idx - margin)
+            region_end = min(len(time), end_idx + margin)
+            
+            candidates.append({
+                'start': float(time[region_start]),
+                'end': float(time[region_end]),
+                'center': float(time[(start_idx + end_idx) // 2]),
+                'depth': float(np.mean(anomaly_scores[start_idx:end_idx])),
+                'duration': float(time[end_idx] - time[start_idx]) if end_idx < len(time) else 0
+            })
+        i += 1
+    
+    # Сортируем по глубине провала
+    candidates.sort(key=lambda x: x['depth'], reverse=True)
+    
+    # Возвращаем топ N регионов
+    return candidates[:num_regions]
 
+
+def calculate_folded_curve(time: np.ndarray, flux: np.ndarray, 
+                           period: Optional[float] = None) -> dict:
+    """
+    Создаёт фазовую складку (phase-folded curve) для поиска периодических сигналов.
+    Если period не указан, пытается оценить его автоматически.
+    """
+    if len(time) < 10:
+        return {'phase': [], 'flux': [], 'period': 0}
+    
+    # Простая оценка периода через автокорреляцию (для демонстрации)
+    if period is None:
+        # Берём первый подозрительный регион как оценку периода
+        # В реальности тут нужен более сложный алгоритм (BLS, Lomb-Scargle и т.д.)
+        # Для простоты используем среднее расстояние между провалами
+        period = (np.max(time) - np.min(time)) / 10.0  # грубая оценка
+    
+    if period <= 0:
+        period = 1.0
+    
+    # Фазовая складка
+    phase = np.mod(time - np.min(time), period) / period
+    
+    # Сортируем по фазе
+    sort_idx = np.argsort(phase)
+    phase_sorted = phase[sort_idx]
+    flux_sorted = flux[sort_idx]
+    
+    return {
+        'phase': phase_sorted.tolist(),
+        'flux': flux_sorted.tolist(),
+        'period': float(period)
+    }
+def detect_transit_candidates(time: np.ndarray, flux: np.ndarray, n_candidates: int = 20,
+                              min_prominence: float = None, min_width_pts: int = 2,
+                              min_snr: float = 3.0) -> List[dict]:
+    """
+    Более робастная детекция транзитов:
+     - инвертируем flux, ищем пики
+     - используем prominence и width (scipy.signal.peak_widths)
+     - фильтруем по SNR (depth / local MAD)
+     - объединяем близкие пики в один кандидат (clustering by proximity)
+    """
+    candidates = []
+    if len(time) < 10:
+        return candidates
+
+    inv = -flux
+    # robust noise estimator (MAD)
+    mad = median_abs_deviation(flux, scale='normal')
+    if mad == 0:
+        mad = np.std(flux) if np.std(flux) > 0 else 1.0
+
+    # default prominence threshold — proportional to MAD if not given
+    if min_prominence is None:
+        min_prominence = 2.0 * mad
+
+    # find peaks on inverted signal (so dips become peaks)
+    peaks, props = find_peaks(inv, prominence=min_prominence, distance=3)
+    if len(peaks) == 0:
+        return []
+
+    # compute widths (in samples)
+    widths_res = peak_widths(inv, peaks, rel_height=0.5)
+    widths = widths_res[0]  # widths in samples
+    left_ips = widths_res[2].astype(int)
+    right_ips = widths_res[3].astype(int)
+
+    # assemble preliminary candidates
+    prelim = []
+    for i, p in enumerate(peaks):
+        depth = float(props['prominences'][i])  # prominence ~ depth in inverted signal
+        width_pts = int(max(1, np.round(widths[i])))
+        # local SNR estimate
+        snr = depth / (mad if mad > 0 else 1.0)
+        prelim.append({
+            'peak_idx': int(p),
+            'center': float(time[p]),
+            'depth': depth,
+            'width_pts': width_pts,
+            'left_idx': int(left_ips[i]),
+            'right_idx': int(right_ips[i]),
+            'snr': float(snr)
+        })
+
+    # filter by simple criteria
+    filtered = [c for c in prelim if c['width_pts'] >= min_width_pts and c['snr'] >= min_snr]
+    if not filtered:
+        # if nothing, relax thresholds a bit to avoid empty result
+        filtered = prelim
+
+    # cluster nearby peaks into single candidate (if centers closer than median width)
+    if filtered:
+        widths_list = [c['width_pts'] for c in filtered]
+        med_width = max(1, int(np.median(widths_list)))
+        clusters = []
+        filtered_sorted = sorted(filtered, key=lambda x: x['center'])
+        current = filtered_sorted[0].copy()
+        for c in filtered_sorted[1:]:
+            if abs(c['center'] - current['center']) <= (med_width * 1.0 * (time[1] - time[0])):
+                # merge: keep deeper depth, expand left/right
+                current['depth'] = max(current['depth'], c['depth'])
+                current['left_idx'] = min(current['left_idx'], c['left_idx'])
+                current['right_idx'] = max(current['right_idx'], c['right_idx'])
+                current['center'] = (current['center'] + c['center']) / 2.0
+                current['snr'] = max(current['snr'], c['snr'])
+            else:
+                clusters.append(current)
+                current = c.copy()
+        clusters.append(current)
+    else:
+        clusters = []
+
+    # prepare final candidates sorted by depth (desc)
+    clusters_sorted = sorted(clusters, key=lambda x: x['depth'], reverse=True)[:n_candidates]
+    final = []
+    for c in clusters_sorted:
+        pidx = int(c['peak_idx'])
+        left = max(0, int(c['left_idx']))
+        right = min(len(time)-1, int(c['right_idx']))
+        center = float(c['center'])
+        depth = float(c['depth'])
+        duration = float(time[right] - time[left]) if right > left else 0.0
+        score = float(c['snr'])
+        final.append({
+            'center_time': center,
+            'start_time': float(time[left]),
+            'end_time': float(time[right]),
+            'depth': depth,
+            'score': score
+        })
+
+    return final
 # -------------------------
 # Основной эндпоинт /predict
 # -------------------------
@@ -357,6 +558,7 @@ async def predict(files: List[UploadFile] = File(...)):
     processed_curve_time = grid.tolist()
     processed_curve_flux = flux_detr.tolist()
 
+    
     # --- Подготовка DataFrame для tsfresh: id=1, time индекс 0..N-1, value=flux_detr
     df_tsf = pd.DataFrame({
         'id': 1,
@@ -425,6 +627,33 @@ async def predict(files: List[UploadFile] = File(...)):
     except Exception:
         # В случае ошибки — формируем пустой список
         top_features_list = []
+    suspicious_regions = detect_suspicious_regions(grid, flux_detr, num_regions=5)
+    
+    # Фазовая складка (используем оценочный период из первого региона или автоматический)
+    estimated_period = None
+    if suspicious_regions and len(suspicious_regions) > 0:
+        # Простая оценка: расстояние между двумя самыми сильными регионами
+        if len(suspicious_regions) >= 2:
+            estimated_period = abs(suspicious_regions[1]['center'] - suspicious_regions[0]['center'])
+    
+    folded_data = calculate_folded_curve(grid, flux_detr, period=estimated_period)
+    try:
+        transit_candidates = detect_transit_candidates(grid, flux_detr, n_candidates=5)
+    except Exception:
+        transit_candidates = []
+
+
+        # сегменты (quarters) — простое равномерное разбиение
+    try:
+        num_segments = FITS_value
+        segs = []
+        tmin = float(grid[0]); tmax = float(grid[-1])
+        for si in range(num_segments):
+            s = tmin + (tmax - tmin) * si / num_segments
+            e = tmin + (tmax - tmin) * (si + 1) / num_segments
+            segs.append({'index': si, 'start': s, 'end': e, 'center': (s + e) / 2.0})
+    except Exception:
+        segs = []
 
     # Формируем JSON-ответ
     result = {
@@ -434,5 +663,9 @@ async def predict(files: List[UploadFile] = File(...)):
         'raw_curve': {'time': raw_curve_time, 'flux': raw_curve_flux},
         'processed_curve': {'time': processed_curve_time, 'flux': processed_curve_flux}
     }
+    result['suspicious_regions'] = suspicious_regions
+    result['folded_curve'] = folded_data
+    result['transit_candidates'] = transit_candidates
+    result['segments'] = segs
 
     return JSONResponse(result)
