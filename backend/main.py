@@ -11,7 +11,9 @@ FastAPI backend для локального использования.
  - сырая кривая (time, flux) и обработанная кривая (time, flux).
 Большинство ключевых мест прокомментированы подробно.
 """
-
+import re
+import unicodedata
+from fastapi import HTTPException
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,6 +31,8 @@ from typing import List, Tuple, Optional
 from scipy.signal import medfilt, savgol_filter
 from tsfresh import extract_features
 from tsfresh.feature_extraction import EfficientFCParameters
+from fastapi import Form
+from io import StringIO
 
 # -------------------------
 # Конфигурация / пути к артефактам модели
@@ -50,6 +54,246 @@ TSFRESH_N_JOBS = 1
 # CORS origins
 FRONTEND_ORIGINS = ["http://localhost:3000"]
 
+
+MODEL2_PATH = "lgb_model_v2.txt"     # или 'model_v2.pkl' если sklearn
+SCALER2_PATH = "scaler_v2.pkl"
+IMPUTER2_PATH = "imputer_v2.pkl"
+FEATURE_COLS2_PATH = "feature_cols_v2.pkl"
+BEST_THRESHOLD2_PATH = "best_threshold_v2.pkl"
+# ---------------------------
+
+# попытка загрузить артефакты v2 (не падаем, если их нет)
+def load_artifacts_v2():
+    if not os.path.exists(MODEL2_PATH):
+        raise RuntimeError(f"Model v2 file not found: {MODEL2_PATH}")
+    if not os.path.exists(SCALER2_PATH):
+        raise RuntimeError(f"Scaler v2 file not found: {SCALER2_PATH}")
+    if not os.path.exists(IMPUTER2_PATH):
+        raise RuntimeError(f"Imputer v2 file not found: {IMPUTER2_PATH}")
+    if not os.path.exists(FEATURE_COLS2_PATH):
+        raise RuntimeError(f"Feature cols v2 file not found: {FEATURE_COLS2_PATH}")
+
+    # model: try LightGBM booster first, else joblib.load
+    try:
+        model2 = lgb.Booster(model_file=MODEL2_PATH)
+    except Exception:
+        try:
+            model2 = joblib.load(MODEL2_PATH)
+        except Exception as e:
+            raise RuntimeError(f"Cannot load model v2: {e}")
+
+    scaler2 = joblib.load(SCALER2_PATH)
+    imputer2 = joblib.load(IMPUTER2_PATH)
+    feature_cols2 = joblib.load(FEATURE_COLS2_PATH)
+
+    best_threshold2 = 0.5
+    if os.path.exists(BEST_THRESHOLD2_PATH):
+        try:
+            best_threshold2 = joblib.load(BEST_THRESHOLD2_PATH)
+        except Exception:
+            best_threshold2 = 0.5
+
+    return model2, scaler2, imputer2, feature_cols2, best_threshold2
+
+# глобальные переменные (попробуем загрузить при старте)
+try:
+    model2, scaler2, imputer2, FEATURE_COLS2, BEST_THRESHOLD2 = load_artifacts_v2()
+    print("Model v2 loaded.")
+except Exception as e:
+    model2 = scaler2 = imputer2 = FEATURE_COLS2 = BEST_THRESHOLD2 = None
+    print(f"Model v2 not loaded: {e}")
+
+# Ожидаемые ключи пользовательских полей (человеческие имена можно формировать фронтом)
+REQUIRED_FIELDS_V2 = ["koi_time0bk", "koi_duration"]
+
+def _map_csv_to_features_v2(df: pd.DataFrame, feature_cols: List[str]) -> pd.DataFrame:
+    """
+    Робастное сопоставление столбцов CSV к признакам модели v2:
+      1) нормализация имени колонки и попытка сопоставить по синонимам
+      2) если какие-то EXPECTED не сопоставлены — заполнить их значениями
+         оставшихся csv-столбцов в порядке (fallback по порядку)
+      3) отсутствующие столбцы -> NaN
+    """
+    # исходные колонки
+    csv_cols = list(df.columns)
+    # нормализуем и создаём словарь col_norm -> orig_name
+    norm_to_orig = {}
+    for c in csv_cols:
+        norm = _normalize_colname(c)
+        norm_to_orig[norm] = c
+
+    mapped_expected = {}  # expected -> orig csv col name
+    used_csv_cols = set()
+
+    # pass 1: по имени/синонимам
+    for orig_col in csv_cols:
+        norm = _normalize_colname(orig_col)
+        matched = _match_by_name(norm)
+        if matched and matched not in mapped_expected:
+            mapped_expected[matched] = orig_col
+            used_csv_cols.add(orig_col)
+
+    # pass 2: также попробуем прямое совпадение нормализованного имени с expected
+    for orig_col in csv_cols:
+        if orig_col in used_csv_cols:
+            continue
+        norm = _normalize_colname(orig_col)
+        for exp in feature_cols:
+            exp_norm = _normalize_colname(exp)
+            if exp_norm == norm and exp not in mapped_expected:
+                mapped_expected[exp] = orig_col
+                used_csv_cols.add(orig_col)
+                break
+
+    # pass 3: заполнение оставшихся expected по порядку неиспользованных csv колонок
+    remaining_csv = [c for c in csv_cols if c not in used_csv_cols]
+    rem_iter = iter(remaining_csv)
+    for exp in feature_cols:
+        if exp in mapped_expected:
+            continue
+        try:
+            candidate = next(rem_iter)
+            mapped_expected[exp] = candidate
+            used_csv_cols.add(candidate)
+        except StopIteration:
+            # больше колонок нет — оставляем NaN
+            mapped_expected[exp] = None
+
+    # создаём итоговый DF в нужном порядке
+    out = pd.DataFrame()
+    for exp in feature_cols:
+        src = mapped_expected.get(exp)
+        if src is None:
+            out[exp] = np.nan
+        else:
+            out[exp] = pd.to_numeric(df[src], errors='coerce')
+
+    return out
+
+def _prepare_and_predict_v2(df_features: pd.DataFrame):
+    """
+    df_features: DataFrame с колонками, сопоставимыми к FEATURE_COLS2 (после _map_csv_to_features_v2)
+    Возвращает список результатов
+    """
+    if model2 is None or imputer2 is None or scaler2 is None or FEATURE_COLS2 is None:
+        raise RuntimeError("Model v2 artifacts not loaded")
+
+    # заполним пропуски через imputer (импутер ожидает 2D)
+    try:
+        X_imp = pd.DataFrame(imputer2.transform(df_features), columns=df_features.columns, index=df_features.index)
+    except Exception:
+        X_imp = df_features.fillna(df_features.median())
+
+    # масштабируем: применяем scaler ко всем столбцам, если scaler был обучен на тех же столбцах
+    try:
+        X_scaled = pd.DataFrame(scaler2.transform(X_imp), columns=X_imp.columns, index=X_imp.index)
+    except Exception:
+        # если трансформ не подошёл — используем X_imp как есть
+        X_scaled = X_imp
+
+    # final X: reindex по FEATURE_COLS2 (чтобы порядок совпадал)
+    X_final = X_scaled.reindex(columns=FEATURE_COLS2, fill_value=0.0)
+
+    # predict
+    try:
+        if isinstance(model2, lgb.Booster):
+            prob = model2.predict(X_final)
+        else:
+            prob = model2.predict_proba(X_final)[:,1]
+    except Exception as e:
+        raise RuntimeError(f"Model v2 predict error: {e}")
+
+    results = []
+    for i, p in enumerate(prob):
+        results.append({
+            "index": int(i),
+            "probability": float(p),
+            "exoplanet": bool(p > BEST_THRESHOLD2),
+            "features": {col: (None if pd.isna(df_features.iloc[i][col]) else float(df_features.iloc[i][col])) for col in df_features.columns}
+        })
+    return results
+
+def _normalize_colname(name: str) -> str:
+    """
+    Нормализует имя колонки: lowercase, убираем диакритику,
+    оставляем только буквенно-цифровые символы, удаляем mission prefixes.
+    """
+    if name is None:
+        return ""
+    s = str(name).lower().strip()
+    # remove diacritics
+    s = ''.join(c for c in unicodedata.normalize('NFKD', s) if not unicodedata.combining(c))
+    # replace separators
+    s = re.sub(r'[\s\-\.\:]+', '_', s)
+    # remove brackets/quotes
+    s = re.sub(r'[^\w]', '', s)
+    # remove common mission prefixes
+    for p in ['koi', 'kep', 'kepler', 'tess', 'ktwo', 'epic', 'tic', 'gaia']:
+        if s.startswith(p):
+            s = s[len(p):]
+    # remove leading underscores/digits
+    s = s.strip('_0123456789')
+    return s
+
+# список ожидаемых признаков (в порядке, который был при обучении)
+EXPECTED_COLS_V2 = [
+    "koi_period",
+    "koi_time0bk",
+    "koi_duration",
+    "koi_depth",
+    "koi_prad",
+    "koi_teq",
+    "koi_insol",
+    "koi_tce_plnt_num",
+    "koi_steff",
+    "koi_slogg",
+    "koi_srad",
+    "koi_kepmag"
+]
+
+# синонимы/токены для распознавания по именам
+SYNONYMS = {
+    "koi_period": ["period", "per", "orbitalperiod", "p"],
+    "koi_time0bk": ["time0", "t0", "epoch", "center", "transitcenter"],
+    "koi_duration": ["duration", "dur", "length", "transitduration"],
+    "koi_depth": ["depth", "depthppm", "transitdepth", "dip"],
+    "koi_prad": ["prad", "planetradius", "radiusplanet", "rplanet"],
+    "koi_teq": ["teq", "eqtemp", "equilibriumtemp", "teqk"],
+    "koi_insol": ["insol", "instellation", "insolation", "flux", "irradiance"],
+    "koi_tce_plnt_num": ["tce", "plntnum", "planetnum", "tce_num"],
+    "koi_steff": ["steff", "teff", "st_teff", "teff_star"],
+    "koi_slogg": ["slogg", "logg", "st_logg"],
+    "koi_srad": ["srad", "rstar", "st_radius", "radiusstar"],
+    "koi_kepmag": ["kepmag", "kp", "mag", "kpmag", "kep_mag"]
+}
+
+def _match_by_name(colname_norm: str) -> Optional[str]:
+    """Попытка сопоставить нормализованное имя колонки к одному из EXPECTED_COLS_V2"""
+    if not colname_norm:
+        return None
+    for expected, tokens in SYNONYMS.items():
+        for tok in tokens:
+            if tok in colname_norm:
+                return expected
+    return None
+
+def human_label_from_feature(feat: str) -> str:
+    """Простая генерация человекочитаемой метки из имени фичи."""
+    mapping = {
+        "koi_period": "Период (дни)",
+        "koi_time0bk": "Время центра (BJD)",
+        "koi_duration": "Длительность (дни)",
+        "koi_depth": "Глубина транзита",
+        "koi_prad": "Радиус планеты (R⊕)",
+        "koi_teq": "Экв. температура (K)",
+        "koi_insol": "Инсоляция",
+        "koi_tce_plnt_num": "Номер TCE/планеты",
+        "koi_steff": "T_eff (K)",
+        "koi_slogg": "log(g)",
+        "koi_srad": "Радиус звезды (R☉)",
+        "koi_kepmag": "Kp magnitude"
+    }
+    return mapping.get(feat, feat.replace('_', ' ').title())
 # -------------------------
 # Инициализация FastAPI и загрузка моделей/артефактов
 # -------------------------
@@ -613,3 +857,89 @@ async def predict(files: List[UploadFile] = File(...)):
     }
 
     return JSONResponse(result)
+
+@app.get("/model2/meta")
+def model2_meta():
+    if FEATURE_COLS2 is None:
+        raise HTTPException(status_code=500, detail="Model v2 not loaded")
+    human = {feat: human_label_from_feature(feat) for feat in FEATURE_COLS2}
+    return {"feature_cols": FEATURE_COLS2, "human_names": human}
+
+@app.post("/predict_second")
+async def predict_second(
+    csv_file: Optional[UploadFile] = File(None),
+    # ручные поля — принимаем только те, что реально нужны (можно расширять)
+    koi_time0bk: Optional[str] = Form(None),
+    koi_duration: Optional[str] = Form(None),
+    # Дополнительно — остальные признаки в виде необязательных form полей (общая обработка ниже)
+    # Не обязательно перечислять все — клиент пришлёт нужные поля.
+):
+    """
+    Логика:
+     - если ручной ввод и оба REQUIRED_FIELDS_V2 заполнены (и не 0) -> используем ручной ввод (1 строка)
+     - иначе если csv_file указан -> используем CSV
+     - иначе -> ошибка (нужно что-то ввести)
+    """
+    if model2 is None:
+        raise HTTPException(status_code=500, detail="Model v2 not loaded on server.")
+
+    # Собираем наличие ручного ввода (проверяем только обязательные поля)
+    manual_has_required = False
+    try:
+        t = float(koi_time0bk) if koi_time0bk is not None and koi_time0bk != "" else None
+    except:
+        t = None
+    try:
+        d = float(koi_duration) if koi_duration is not None and koi_duration != "" else None
+    except:
+        d = None
+
+    if t is not None and d is not None and t != 0 and d != 0:
+        manual_has_required = True
+
+    if manual_has_required:
+        # собираем все incoming form поля (fastapi сохраняет их в request.form, но мы принимаем основные)
+        # Создаём DataFrame с единственной строкой. Для простоты — берём только feature names из FEATURE_COLS2:
+        row = {}
+        for feat in FEATURE_COLS2:
+            # пробуем получить из form: FastAPI прокинет поля как аргументы; но если не перечислили — просто None
+            # здесь мы используем koi_time0bk и koi_duration уже полученные, остальные ставим NaN
+            if feat == "koi_time0bk":
+                row[feat] = t
+            elif feat == "koi_duration":
+                row[feat] = d
+            else:
+                # если поле пришло в form как ключ — можно получить через request (сложнее),
+                # но обычно пользователь заполнил минимум — оставим NaN (импутер заполнит)
+                row[feat] = np.nan
+        df = pd.DataFrame([row])
+    else:
+        # используем CSV
+        if csv_file is None:
+            raise HTTPException(status_code=400, detail="No valid manual input and no CSV provided for model v2.")
+        if not csv_file.filename.lower().endswith(".csv"):
+            raise HTTPException(status_code=400, detail="Only CSV files accepted for predict_second.")
+        content = await csv_file.read()
+        try:
+            s = content.decode("utf-8")
+        except:
+            s = content.decode("latin1")
+        df_raw = pd.read_csv(StringIO(s), header=0)
+        if df_raw.shape[0] == 0:
+            raise HTTPException(status_code=400, detail="CSV is empty.")
+        # маппим csv в expected features
+        df = _map_csv_to_features_v2(df_raw, FEATURE_COLS2)
+        # проверим, что у каждой строки есть обязательные поля (после маппинга)
+        missing_req = df['koi_time0bk'].isna() | df['koi_duration'].isna()
+        if missing_req.any():
+            # если какие-то строки не имеют обязательных значений — сообщим индексы
+            bad_idx = list(df[missing_req].index)
+            raise HTTPException(status_code=400, detail=f"CSV rows missing required fields koi_time0bk or koi_duration at rows: {bad_idx}")
+
+    # теперь предсказание
+    try:
+        results = _prepare_and_predict_v2(df)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Prediction v2 failed: {e}")
+
+    return JSONResponse({"count": len(results), "results": results})
