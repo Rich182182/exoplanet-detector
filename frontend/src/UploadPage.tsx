@@ -2,7 +2,7 @@
 import React, { useRef, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
+import backIcon from './components/weui_back-filled.png'; // Adjust path if needed
 /**
  * UploadPage.tsx — updated per user's instructions.
  *
@@ -208,7 +208,7 @@ submitWhite: {
   // fields styled as black buttons with white text (but are inputs)
   fieldButtonInput: {
     display: "block",
-    width: "100%",
+    width: "95%",
     padding: "10px 12px",
     borderRadius: 8,
     border: `1px solid ${BORDER}`,
@@ -222,26 +222,62 @@ submitWhite: {
     fontSize: 16,
     fontWeight: 700,
     marginBottom: 8,
+    paddingLeft: 100,
     textAlign: "left" as const,
   },
-
+  fieldContainer: {
+    display: "flex",
+    flexDirection: "column" as const,
+    alignItems: "center",
+    width: "95%",
+    // padding: "10px 12px",
+    borderRadius: 8,
+    border: `1px solid ${BORDER}`,
+    background: BLACK,
+    cursor: "pointer",
+    userSelect: "none",
+  },
+  fieldLabelCentered: {
+    color: WHITE,
+    fontSize: 12,
+    fontWeight: 700,
+    marginBottom: 2,
+    marginTop: 6,
+    textAlign: "center" as const,
+  },
+  fieldInputCentered: {
+    display: "block",
+    width: "100%",
+    // padding: "8px 0",
+    border: "none",
+    background: "transparent",
+    color: WHITE,
+    fontSize: 10,
+    outline: "none",
+    marginBottom: 2,
+    textAlign: "center" as const,
+  },
   // basic grid and bottom panels (all inside same fieldsInner)
   basicGrid: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
     gap: 18,
+    marginTop: 12,
     marginBottom: 12,
   },
   bottomTwo: {
     display: "flex",
     gap: 12,
-    marginTop: 6,
+    marginTop: 70,
+    marginBottom: 20,
+    
   },
   bottomCol: {
     flex: 1,
     display: "flex",
     flexDirection: "column" as const,
-    gap: 12,
+    gap: 15,
+    
   },
   verticalDivider: {
     width: 1,
@@ -277,13 +313,14 @@ submitWhite: {
 
   // results box and analyze button
   resultBox: {
-    marginTop: 12,
-    padding: 12,
-    borderRadius: 8,
-    border: `1px solid rgba(255,255,255,0.04)`,
-    background: "rgba(255,255,255,0.02)",
-    color: "#dfe7ee",
-  },
+  marginTop: 12,
+  padding: 12,
+  borderRadius: 8,
+  border: `1px solid rgba(255,255,255,0.04)`,
+  background: "rgba(255,255,255,0.02)",
+  color: "#dfe7ee",
+  textAlign: "left" as const,
+},
   analyzeBtn: {
     marginTop: 8,
     padding: "8px 12px",
@@ -316,17 +353,18 @@ export default function UploadPage() {
   const [resultV2, setResultV2] = useState<any>(null);
 
   // fields for V2 manual
-  const [planetName, setPlanetName] = useState("");
-  const [orbitalPeriod, setOrbitalPeriod] = useState("");
-  const [transitTime, setTransitTime] = useState("");
-  const [transitDuration, setTransitDuration] = useState("");
-  const [planetMass, setPlanetMass] = useState("");
-  const [planetDistance, setPlanetDistance] = useState("");
-  const [starType, setStarType] = useState("");
-  const [starTemperature, setStarTemperature] = useState("");
-  const [starBrightness, setStarBrightness] = useState("");
-  const [discoverySite, setDiscoverySite] = useState("");
-  const [numberOfMoons, setNumberOfMoons] = useState("");
+const [koiPeriod, setKoiPeriod] = useState("");
+const [koiTime0bk, setKoiTime0bk] = useState("");
+const [koiDuration, setKoiDuration] = useState("");
+const [koiDepth, setKoiDepth] = useState("");
+const [koiPrad, setKoiPrad] = useState("");
+const [koiTeq, setKoiTeq] = useState("");
+const [koiInsol, setKoiInsol] = useState("");
+const [koiTcePlntNum, setKoiTcePlntNum] = useState("");
+const [koiSteff, setKoiSteff] = useState("");
+const [koiSlogg, setKoiSlogg] = useState("");
+const [koiSrad, setKoiSrad] = useState("");
+const [koiKepmag, setKoiKepmag] = useState("");
 
   // ========== Main selection UI (LEFT AS IS) ==========
   if (!selected) {
@@ -508,51 +546,44 @@ export default function UploadPage() {
   };
 
   const submitV2Manual = async () => {
-    // manual requires transitTime and transitDuration non-zero
-    const t = Number(transitTime);
-    const d = Number(transitDuration);
-    if (!isFinite(t) || !isFinite(d) || t === 0 || d === 0) {
-      alert("Manual submit requires valid Transit Time (koi_time0bk) and Transit Duration (koi_duration) (non-zero).");
-      return;
-    }
-    const fd = new FormData();
-    // required
-    fd.append("koi_time0bk", transitTime);
-    fd.append("koi_duration", transitDuration);
-    // append others (or empty to be imputed)
-    fd.append("koi_period", orbitalPeriod ?? "");
-    fd.append("koi_depth", "");
-    fd.append("koi_prad", "");
-    fd.append("koi_teq", "");
-    fd.append("koi_insol", "");
-    fd.append("koi_steff", starTemperature ?? "");
-    fd.append("koi_slogg", "");
-    fd.append("koi_srad", "");
-    fd.append("koi_kepmag", "");
-    // metadata
-    fd.append("planet_name", planetName);
-    fd.append("planet_mass", planetMass);
-    fd.append("planet_distance", planetDistance);
-    fd.append("star_type", starType);
-    fd.append("star_brightness", starBrightness);
-    fd.append("discovery_site", discoverySite);
-    fd.append("number_of_moons", numberOfMoons);
+  // manual requires koiTime0bk and koiDuration non-zero
+  const t = Number(koiTime0bk);
+  const d = Number(koiDuration);
+  if (!isFinite(t) || !isFinite(d) || t === 0 || d === 0) {
+    alert("Manual submit requires valid Transit Mid Time (koi_time0bk) and Transit Duration (koi_duration) (non-zero).");
+    return;
+  }
+  const fd = new FormData();
+  // required
+  fd.append("koi_time0bk", koiTime0bk);
+  fd.append("koi_duration", koiDuration);
+  // append others (or empty to be imputed)
+  fd.append("koi_period", koiPeriod ?? "");
+  fd.append("koi_depth", koiDepth ?? "");
+  fd.append("koi_prad", koiPrad ?? "");
+  fd.append("koi_teq", koiTeq ?? "");
+  fd.append("koi_insol", koiInsol ?? "");
+  fd.append("koi_tce_plnt_num", koiTcePlntNum ?? "");
+  fd.append("koi_steff", koiSteff ?? "");
+  fd.append("koi_slogg", koiSlogg ?? "");
+  fd.append("koi_srad", koiSrad ?? "");
+  fd.append("koi_kepmag", koiKepmag ?? "");
 
-    setLoadingV2(true);
-    try {
-      const res = await axios.post("http://localhost:8000/predict_second", fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-        timeout: 120000,
-      });
-      setResultV2(res.data);
-      localStorage.setItem("analysisData_v2", JSON.stringify(res.data));
-    } catch (err: any) {
-      console.error(err);
-      alert(`Manual submit failed: ${err?.response?.data?.detail ?? "See console"}`);
-    } finally {
-      setLoadingV2(false);
-    }
-  };
+  setLoadingV2(true);
+  try {
+    const res = await axios.post("http://localhost:8000/predict_second", fd, {
+      headers: { "Content-Type": "multipart/form-data" },
+      timeout: 120000,
+    });
+    setResultV2(res.data);
+    localStorage.setItem("analysisData_v2", JSON.stringify(res.data));
+  } catch (err: any) {
+    console.error(err);
+    alert(`Manual submit failed: ${err?.response?.data?.detail ?? "See console"}`);
+  } finally {
+    setLoadingV2(false);
+  }
+};
 
   return (
     
@@ -576,7 +607,7 @@ export default function UploadPage() {
               {/* white button for selecting single file (or CSV) */}
               <div style={styles.uploadButtonWhite} onClick={triggerV2Single} role="button" aria-label="Upload single file or CSV">
                 <div style={styles.uploadLabel}>Upload CSV file</div>
-                <div style={styles.uploadFilesList}>{v2File ? v2File.name : "Click to choose CSV (only one allowed)"}</div>
+                <div style={styles.uploadFilesList}>{v2File ? v2File.name : "Click to choose CSV (one only)"}</div>
                 {/* hidden single input */}
                 <input ref={singleRef} type="file" accept=".csv" onChange={onV2SingleChange} style={{ display: "none" }} />
               </div>
@@ -596,76 +627,176 @@ export default function UploadPage() {
         <div style={styles.fieldsOuter}>
           <div style={styles.fieldsInner}>
             <div style={{ textAlign: "center", marginBottom: 12 }}>
-              <div style={{ fontSize: 20, fontWeight: 700, color: TEXT }}>Basic Planet Information</div>
-              <div style={{ color: "#d1dbe3", marginTop: 8 }}>Fill in planet details. Transit time and duration required for manual submit.</div>
-            </div>
+              <div style={{ fontSize: 20, marginBottom: 20, fontWeight: 700, color: TEXT }}>Basic Planet Information</div>
+              </div>
 
-            {/* basic grid (two columns) */}
             <div style={styles.basicGrid}>
-              <div>
-                <div style={styles.fieldLabelPlain}>Planet Name</div>
-                <input style={styles.fieldButtonInput} placeholder="Enter planet name" value={planetName} onChange={(e) => setPlanetName(e.target.value)} />
-              </div>
-              <div>
-                <div style={styles.fieldLabelPlain}>Planet Mass (M⊕)</div>
-                <input style={styles.fieldButtonInput} placeholder="Enter planet mass (optional)" value={planetMass} onChange={(e) => setPlanetMass(e.target.value)} />
-              </div>
-
-              <div>
-                <div style={styles.fieldLabelPlain}>Orbital Period (days)</div>
-                <input style={styles.fieldButtonInput} placeholder="Enter orbital period" value={orbitalPeriod} onChange={(e) => setOrbitalPeriod(e.target.value)} />
-              </div>
-              <div>
-                <div style={styles.fieldLabelPlain}>Planet Distance from Star (AU)</div>
-                <input style={styles.fieldButtonInput} placeholder="Enter distance from star" value={planetDistance} onChange={(e) => setPlanetDistance(e.target.value)} />
+              <div style={styles.fieldContainer} onClick={(e) => {
+                const input = e.currentTarget.querySelector('input');
+                if (input) input.focus();
+              }}>
+                <div style={styles.fieldLabelCentered}>Orbital Period (days)</div>
+                <input 
+                  style={styles.fieldInputCentered} 
+                  placeholder="Enter orbital period" 
+                  value={koiPeriod} 
+                  onChange={(e) => setKoiPeriod(e.target.value)} 
+                />
               </div>
 
-              <div>
-                <div style={styles.fieldLabelPlain}>Transit Time (koi_time0bk) *</div>
-                <input style={styles.fieldButtonInput} placeholder="e.g. 2457000.123" value={transitTime} onChange={(e) => setTransitTime(e.target.value)} />
+              <div style={styles.fieldContainer} onClick={(e) => {
+                const input = e.currentTarget.querySelector('input');
+                if (input) input.focus();
+              }}>
+                <div style={styles.fieldLabelCentered}>Transit Mid Time (BJD) *</div>
+                <input 
+                  style={styles.fieldInputCentered} 
+                  placeholder="e.g. 2457000.123" 
+                  value={koiTime0bk} 
+                  onChange={(e) => setKoiTime0bk(e.target.value)} 
+                />
               </div>
-              <div>
-                <div style={styles.fieldLabelPlain}>Transit Duration (koi_duration) *</div>
-                <input style={styles.fieldButtonInput} placeholder="Duration in days e.g. 0.08" value={transitDuration} onChange={(e) => setTransitDuration(e.target.value)} />
+
+              <div style={styles.fieldContainer} onClick={(e) => {
+                const input = e.currentTarget.querySelector('input');
+                if (input) input.focus();
+              }}>
+                <div style={styles.fieldLabelCentered}>Transit Duration (days) *</div>
+                <input 
+                  style={styles.fieldInputCentered} 
+                  placeholder="Duration in days e.g. 0.08" 
+                  value={koiDuration} 
+                  onChange={(e) => setKoiDuration(e.target.value)} 
+                />
+              </div>
+
+              <div style={styles.fieldContainer} onClick={(e) => {
+                const input = e.currentTarget.querySelector('input');
+                if (input) input.focus();
+              }}>
+                <div style={styles.fieldLabelCentered}>Transit Depth</div>
+                <input 
+                  style={styles.fieldInputCentered} 
+                  placeholder="e.g. 0.01" 
+                  value={koiDepth} 
+                  onChange={(e) => setKoiDepth(e.target.value)} 
+                />
+              </div>
+
+              <div style={styles.fieldContainer} onClick={(e) => {
+                const input = e.currentTarget.querySelector('input');
+                if (input) input.focus();
+              }}>
+                <div style={styles.fieldLabelCentered}>Planet Radius (R⊕)</div>
+                <input 
+                  style={styles.fieldInputCentered} 
+                  placeholder="e.g. 1.5" 
+                  value={koiPrad} 
+                  onChange={(e) => setKoiPrad(e.target.value)} 
+                />
               </div>
             </div>
 
             {/* bottom two sections inside same block */}
             <div style={styles.bottomTwo}>
               <div style={styles.bottomCol}>
-                <div style={{ textAlign: "center", fontWeight: 700, color: TEXT }}>Star and System</div>
-                <div>
-                  <div style={styles.fieldLabelPlain}>Star Type</div>
-                  <input style={styles.fieldButtonInput} placeholder="e.g. G2V" value={starType} onChange={(e) => setStarType(e.target.value)} />
+                <div style={{ textAlign: "center",marginBottom: 10, fontWeight: 700, color: TEXT }}>Star Parameters</div>
+                <div style={styles.fieldContainer} onClick={(e) => {
+                  const input = e.currentTarget.querySelector('input');
+                  if (input) input.focus();
+                }}>
+                  <div style={styles.fieldLabelCentered}>Star Effective Temperature (K)</div>
+                  <input 
+                    style={styles.fieldInputCentered} 
+                    placeholder="e.g. 5778" 
+                    value={koiSteff} 
+                    onChange={(e) => setKoiSteff(e.target.value)} 
+                  />
                 </div>
-                <div>
-                  <div style={styles.fieldLabelPlain}>Star Temperature (K)</div>
-                  <input style={styles.fieldButtonInput} placeholder="e.g. 5778" value={starTemperature} onChange={(e) => setStarTemperature(e.target.value)} />
+                <div style={styles.fieldContainer} onClick={(e) => {
+                  const input = e.currentTarget.querySelector('input');
+                  if (input) input.focus();
+                }}>
+                  <div style={styles.fieldLabelCentered}>Star Surface Gravity log(g)</div>
+                  <input 
+                    style={styles.fieldInputCentered} 
+                    placeholder="e.g. 4.44" 
+                    value={koiSlogg} 
+                    onChange={(e) => setKoiSlogg(e.target.value)} 
+                  />
                 </div>
-                <div>
-                  <div style={styles.fieldLabelPlain}>Star Brightness</div>
-                  <input style={styles.fieldButtonInput} placeholder="Apparent magnitude" value={starBrightness} onChange={(e) => setStarBrightness(e.target.value)} />
+                <div style={styles.fieldContainer} onClick={(e) => {
+                  const input = e.currentTarget.querySelector('input');
+                  if (input) input.focus();
+                }}>
+                  <div style={styles.fieldLabelCentered}>Star Radius (R☉)</div>
+                  <input 
+                    style={styles.fieldInputCentered} 
+                    placeholder="e.g. 1.0" 
+                    value={koiSrad} 
+                    onChange={(e) => setKoiSrad(e.target.value)} 
+                  />
+                </div>
+                <div style={styles.fieldContainer} onClick={(e) => {
+                  const input = e.currentTarget.querySelector('input');
+                  if (input) input.focus();
+                }}>
+                  <div style={styles.fieldLabelCentered}>Kepler Magnitude (Kp)</div>
+                  <input 
+                    style={styles.fieldInputCentered} 
+                    placeholder="e.g. 12.5" 
+                    value={koiKepmag} 
+                    onChange={(e) => setKoiKepmag(e.target.value)} 
+                  />
                 </div>
               </div>
 
-              <div style={styles.verticalDivider} aria-hidden />
-
               <div style={styles.bottomCol}>
-                <div style={{ textAlign: "center", fontWeight: 700, color: TEXT }}>Observations</div>
-                <div>
-                  <div style={styles.fieldLabelPlain}>Discovery Site</div>
-                  <input style={styles.fieldButtonInput} placeholder="Observatory or mission" value={discoverySite} onChange={(e) => setDiscoverySite(e.target.value)} />
+                <div style={{ textAlign: "center",marginBottom: 10, fontWeight: 700, color: TEXT }}>System Parameters</div>
+                <div style={styles.fieldContainer} onClick={(e) => {
+                  const input = e.currentTarget.querySelector('input');
+                  if (input) input.focus();
+                }}>
+                  <div style={styles.fieldLabelCentered}>Equilibrium Temperature (K)</div>
+                  <input 
+                    style={styles.fieldInputCentered} 
+                    placeholder="e.g. 300" 
+                    value={koiTeq} 
+                    onChange={(e) => setKoiTeq(e.target.value)} 
+                  />
                 </div>
-                <div>
-                  <div style={styles.fieldLabelPlain}>Number of Moons</div>
-                  <input style={styles.fieldButtonInput} placeholder="e.g. 0" value={numberOfMoons} onChange={(e) => setNumberOfMoons(e.target.value)} />
+                <div style={styles.fieldContainer} onClick={(e) => {
+                  const input = e.currentTarget.querySelector('input');
+                  if (input) input.focus();
+                }}>
+                  <div style={styles.fieldLabelCentered}>Insolation</div>
+                  <input 
+                    style={styles.fieldInputCentered} 
+                    placeholder="e.g. 1.0" 
+                    value={koiInsol} 
+                    onChange={(e) => setKoiInsol(e.target.value)} 
+                  />
+                </div>
+                <div style={styles.fieldContainer} onClick={(e) => {
+                  const input = e.currentTarget.querySelector('input');
+                  if (input) input.focus();
+                }}>
+                  <div style={styles.fieldLabelCentered}>TCE/Planet Number</div>
+                  <input 
+                    style={styles.fieldInputCentered} 
+                    placeholder="e.g. 1" 
+                    value={koiTcePlntNum} 
+                    onChange={(e) => setKoiTcePlntNum(e.target.value)} 
+                  />
                 </div>
               </div>
             </div>
 
+            
+
             {/* centered white submit manual */}
             <div style={styles.centeredSubmitRow}>
-              <button style={styles.centeredSubmit} onClick={submitV2Manual} aria-disabled={!transitTime || !transitDuration}>
+              <button style={styles.centeredSubmit} onClick={submitV2Manual} aria-disabled={!koiTime0bk || !koiDuration}>
                 {loadingV2 ? "Submitting..." : "Submit Manual"}
               </button>
             </div>
@@ -677,20 +808,31 @@ export default function UploadPage() {
         <input ref={singleRef} type="file" accept="*" style={{ display: "none" }} onChange={onV2SingleChange} />
 
         {/* bottom back */}
-        <div style={{ marginTop: 12 }}>
-          <div style={{ color: "#cfe1ff", cursor: "pointer" }} onClick={() => setSelected(null)}>← Back</div>
+        <div style={{ 
+          marginTop: 12, 
+          position: "sticky", 
+          top: 20, // Добавь это, чтобы sticky работало при достижении верха
+          zIndex: 10, // Опционально: чтобы элемент был поверх других
+          marginBottom: 20,
+        }}>
+          <div style={{ cursor: "pointer" }} onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })}>
+            <img src={backIcon} alt="Back" style={{ width: 54, height: 24}} /> {/* Removed filter to keep original white color */}
+          </div>
         </div>
 
         {/* results */}
         {resultV2 && (
-          <div style={styles.resultBox}>
-            <div style={{ fontWeight: 700 }}>Results ({resultV2.count ?? "?"})</div>
+          
+          <div>
+            <div style={{textAlign: "center" as const, fontSize: 30, marginBottom: 20, fontWeight: 700 }}>Results ({resultV2.count ?? "?"})</div>
+            <div style={styles.resultBox}>
             <div style={{ marginTop: 8 }}>
               {Array.isArray(resultV2.results) ? resultV2.results.map((r: any) => (
                 <div key={r.index} style={{ marginBottom: 10 }}>
                   <div><b>Row #{r.index}</b> — Probability: {(r.probability * 100).toFixed(2)}% — Exoplanet: {r.exoplanet ? "Yes" : "No"}</div>
                 </div>
               )) : <div>No results</div>}
+            </div>
             </div>
           </div>
         )}
