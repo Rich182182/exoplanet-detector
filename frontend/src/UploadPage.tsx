@@ -127,8 +127,8 @@ mainText: {
   // double border block
   doubleOuter: {
     borderRadius: 10,
-    border: `2px solid rgba(255,255,255,0.02)`,
-    padding: 12,
+    border: `1px solid ${BORDER}`,
+    padding: 20,
     background: "transparent",
     marginBottom: 0,
     marginTop: 0,
@@ -192,14 +192,15 @@ submitWhite: {
   // fields double border (for V2 manual fields)
   fieldsOuter: {
     borderRadius: 10,
-    border: `2px solid rgba(255,255,255,0.02)`,
-    padding: 12,
-    background: "transparent",
+    border: `1px solid ${BORDER}`,
+    padding: 20,
+    background: GRADIENT,
+    // background: "transparent",
     marginTop: 0,
   },
   fieldsInner: {
     borderRadius: 8,
-    border: `1px solid ${BORDER}`,
+    // border: `1px solid ${BORDER}`,
     padding: 18,
     background: GRADIENT,
     boxSizing: "border-box",
