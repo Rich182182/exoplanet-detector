@@ -98,7 +98,7 @@ mainText: {
 
   // panel wrapper for model pages
   modelWrapper: {
-    maxWidth: 980,
+    maxWidth: "120vh",
     margin: "0 auto",
   },
   header: {
@@ -141,7 +141,7 @@ mainText: {
     borderRadius: 15,
     border: `1px solid ${BORDER}`,
     padding: 14,
-    background: BACK,
+    background: GRADIENT1,
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
@@ -296,7 +296,7 @@ submitWhite: {
   centeredSubmitRow: {
     display: "flex",
     justifyContent: "center",
-    marginTop: 18,
+    marginTop: 30,
     zIndex: 1,
   },
   centeredSubmit: {
@@ -866,7 +866,7 @@ export default function UploadPage() {
         {resultV2 && (
           
           <div>
-            <div style={{textAlign: "center" as const, fontSize: 30, marginBottom: 20, fontWeight: 700}}>Results ({resultV2.count ?? "?"})</div>
+            <div style={{textAlign: "center" as const, fontSize: 30, marginBottom: 20, fontWeight: 700, marginTop: 30}}>Results ({resultV2.count ?? "?"})</div>
             <div style={styles.resultBox}>
             <div style={{ marginTop: 8 }}>
               {Array.isArray(resultV2.results) ? resultV2.results.map((r: any) => (
