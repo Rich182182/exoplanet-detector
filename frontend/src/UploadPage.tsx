@@ -1,5 +1,5 @@
 // src/UploadPage.tsx
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import backIcon from './components/weui_back-filled.png'; // Adjust path if needed
@@ -28,7 +28,10 @@ const BORDER = "#727579";
 const TEXT = "#F5F5F5";
 const WHITE = "#FFFFFF";
 const BLACK = "#000000";
-const GRADIENT = "linear-gradient(90deg, #020407 12%, #11223A 64%, #183253 78%, #20416D 100%)";
+const BACK = "rgba(30, 6, 166, 0.6)";
+const GRADIENT = "#131313";
+const GRADIENT1 = "linear-gradient(90deg, #020407 16%, #0D054A 50%, #020407 88%)";
+const GRADIENT2 = "linear-gradient(90deg, #0D054A 0%, #020407 50%,#0D054A 100%)";
 const styles: { [k: string]: React.CSSProperties } = {
   page: {
     minHeight: "100vh",
@@ -66,7 +69,7 @@ const styles: { [k: string]: React.CSSProperties } = {
   width: "100%",
   height: "100%",
   borderRadius: 8,
-  background: GRADIENT,
+  background: GRADIENT2,
   border: `1px solid ${BORDER}`,
   display: "flex",
   alignItems: "center",
@@ -78,6 +81,7 @@ btnContent: {
   display: "flex",
   flexDirection: "column" as const,
   alignItems: "center",
+  
   gap: 4,  // Отступ между текстом и подписью (2-6px подкорректируйте)
 },
 mainText: {
@@ -137,7 +141,7 @@ mainText: {
     borderRadius: 15,
     border: `1px solid ${BORDER}`,
     padding: 14,
-    background: GRADIENT,
+    background: BACK,
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
@@ -204,6 +208,7 @@ submitWhite: {
     padding: 18,
     background: GRADIENT,
     boxSizing: "border-box",
+    
   },
 
   // fields styled as black buttons with white text (but are inputs)
@@ -237,6 +242,7 @@ submitWhite: {
     background: BLACK,
     cursor: "pointer",
     userSelect: "none",
+    zIndex: 3,
   },
   fieldLabelCentered: {
     color: WHITE,
@@ -291,6 +297,7 @@ submitWhite: {
     display: "flex",
     justifyContent: "center",
     marginTop: 18,
+    zIndex: 1,
   },
   centeredSubmit: {
     padding: "12px 24px",
@@ -300,6 +307,7 @@ submitWhite: {
     border: `1px solid ${BORDER}`,
     fontWeight: 700,
     cursor: "pointer",
+    zIndex: 10,
   },
 
   // back button top-left (aligned with double border level)
@@ -310,6 +318,7 @@ submitWhite: {
     padding: "  70px 15px",
     cursor: "pointer",
     color: "#cfe1ff",
+    zIndex: 3,
   },
 
   // results box and analyze button
@@ -334,6 +343,23 @@ submitWhite: {
   },
 };
 
+const GlowingCircles= ({ centerX = 50, centerY = 70, size = 400, opacity = 0.8 }) => {
+  // centerX and centerY in % (0-100), size in px for radius
+  return (
+    <div style={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      opacity: opacity,
+      width: '100%',
+      height: '100%',
+      background: `radial-gradient(circle at ${centerX}% ${centerY}%, #1E06A680 0%, transparent ${size}px)`,
+      zIndex: 2, // Behind other elements
+      pointerEvents: 'none',
+      overflow: "visible",
+    }} />
+  );
+};
 export default function UploadPage() {
   const navigate = useNavigate();
 
@@ -354,26 +380,33 @@ export default function UploadPage() {
   const [resultV2, setResultV2] = useState<any>(null);
 
   // fields for V2 manual
-const [koiPeriod, setKoiPeriod] = useState("");
-const [koiTime0bk, setKoiTime0bk] = useState("");
-const [koiDuration, setKoiDuration] = useState("");
-const [koiDepth, setKoiDepth] = useState("");
-const [koiPrad, setKoiPrad] = useState("");
-const [koiTeq, setKoiTeq] = useState("");
-const [koiInsol, setKoiInsol] = useState("");
-const [koiTcePlntNum, setKoiTcePlntNum] = useState("");
-const [koiSteff, setKoiSteff] = useState("");
-const [koiSlogg, setKoiSlogg] = useState("");
-const [koiSrad, setKoiSrad] = useState("");
-const [koiKepmag, setKoiKepmag] = useState("");
+  const [koiPeriod, setKoiPeriod] = useState("");
+  const [koiTime0bk, setKoiTime0bk] = useState("");
+  const [koiDuration, setKoiDuration] = useState("");
+  const [koiDepth, setKoiDepth] = useState("");
+  const [koiPrad, setKoiPrad] = useState("");
+  const [koiTeq, setKoiTeq] = useState("");
+  const [koiInsol, setKoiInsol] = useState("");
+  const [koiTcePlntNum, setKoiTcePlntNum] = useState("");
+  const [koiSteff, setKoiSteff] = useState("");
+  const [koiSlogg, setKoiSlogg] = useState("");
+  const [koiSrad, setKoiSrad] = useState("");
+  const [koiKepmag, setKoiKepmag] = useState("");
+
+
+  
 
   // ========== Main selection UI (LEFT AS IS) ==========
   if (!selected) {
     return (
+      
       <div style={styles.page}>
+        <GlowingCircles centerX={0} centerY={10} size={300} />
+        <GlowingCircles centerX={100} centerY={50} size={600} />
+        <GlowingCircles centerX={30} centerY={75} opacity={0.5} size={400}/>
         <div style={{ maxWidth: 1120, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 18 }}>
-            <h1 style={{ fontSize: 36, margin: 0, textTransform: "uppercase", fontWeight: 700 }}>UPLOAD YOUR DATA</h1>
+            <h1 style={{ fontSize: 36, marginTop: 20, textTransform: "uppercase", fontWeight: 700 }}>UPLOAD YOUR DATA</h1>
             <p style={{ marginTop: 10, color: "#c7d3db", fontStyle: "italic", maxWidth: 820, marginLeft: "auto", marginRight: "auto" }}>
               Choose model: Light Curve (FITS) or Features (CSV/manual).
             </p>
@@ -451,6 +484,9 @@ const [koiKepmag, setKoiKepmag] = useState("");
 
     return (
       <div style={styles.page}>
+        <GlowingCircles centerX={0} centerY={10} size={300} />
+        <GlowingCircles centerX={100} centerY={50} size={600} />
+        <GlowingCircles centerX={30} centerY={75} opacity={0.5} size={400}/>
         <div style={styles.backTopLeft} onClick={() => setSelected(null)}>← Back</div>
         <div style={styles.modelWrapper}>
           {/* Back button top-left on same visual level as border */}
@@ -589,6 +625,9 @@ const [koiKepmag, setKoiKepmag] = useState("");
   return (
     
     <div style={styles.page}>
+      <GlowingCircles centerX={0} centerY={10} size={300} />
+      <GlowingCircles centerX={100} centerY={50} size={600} />
+      <GlowingCircles centerX={30} centerY={75} opacity={0.5} size={400}/>
     <div style={styles.backTopLeft} onClick={() => setSelected(null)}>← Back</div>
       <div style={styles.modelWrapper}>
         {/* back button top-left */}
@@ -601,7 +640,7 @@ const [koiKepmag, setKoiKepmag] = useState("");
           </p>
           <div style={styles.arrow}>↓</div>
         </div>
-
+        {/* <GlowingCircles centerX={40} centerY={20} opacity={0.5} /> */}
         {/* first double border: upload (single file or csv) */}
         <div style={styles.doubleOuter}>
           <div style={styles.doubleInner}>
@@ -625,14 +664,16 @@ const [koiKepmag, setKoiKepmag] = useState("");
         <div style={styles.blackGap} />
 
         {/* second double border: manual fields (single block) */}
+        
         <div style={styles.fieldsOuter}>
           <div style={styles.fieldsInner}>
-            <div style={{ textAlign: "center", marginBottom: 12 }}>
+            
+            <div style={{ textAlign: "center", marginBottom: 12, zIndex: 3 }}>
               <div style={{ fontSize: 20, marginBottom: 20, fontWeight: 700, color: TEXT }}>Basic Planet Information</div>
               </div>
 
             <div style={styles.basicGrid}>
-              <div style={styles.fieldContainer} onClick={(e) => {
+              <div style={{ ...styles.fieldContainer, background: GRADIENT2 }} onClick={(e) => {
                 const input = e.currentTarget.querySelector('input');
                 if (input) input.focus();
               }}>
@@ -645,7 +686,7 @@ const [koiKepmag, setKoiKepmag] = useState("");
                 />
               </div>
 
-              <div style={styles.fieldContainer} onClick={(e) => {
+              <div style={{ ...styles.fieldContainer, background: GRADIENT2 }} onClick={(e) => {
                 const input = e.currentTarget.querySelector('input');
                 if (input) input.focus();
               }}>
@@ -658,7 +699,7 @@ const [koiKepmag, setKoiKepmag] = useState("");
                 />
               </div>
 
-              <div style={styles.fieldContainer} onClick={(e) => {
+              <div style={{ ...styles.fieldContainer, background: GRADIENT1 }} onClick={(e) => {
                 const input = e.currentTarget.querySelector('input');
                 if (input) input.focus();
               }}>
@@ -671,7 +712,7 @@ const [koiKepmag, setKoiKepmag] = useState("");
                 />
               </div>
 
-              <div style={styles.fieldContainer} onClick={(e) => {
+              <div style={{ ...styles.fieldContainer, background: GRADIENT1 }} onClick={(e) => {
                 const input = e.currentTarget.querySelector('input');
                 if (input) input.focus();
               }}>
@@ -684,7 +725,7 @@ const [koiKepmag, setKoiKepmag] = useState("");
                 />
               </div>
 
-              <div style={styles.fieldContainer} onClick={(e) => {
+              <div style={{ ...styles.fieldContainer, background: GRADIENT2 }} onClick={(e) => {
                 const input = e.currentTarget.querySelector('input');
                 if (input) input.focus();
               }}>
@@ -701,8 +742,8 @@ const [koiKepmag, setKoiKepmag] = useState("");
             {/* bottom two sections inside same block */}
             <div style={styles.bottomTwo}>
               <div style={styles.bottomCol}>
-                <div style={{ textAlign: "center",marginBottom: 10, fontWeight: 700, color: TEXT }}>Star Parameters</div>
-                <div style={styles.fieldContainer} onClick={(e) => {
+                <div style={{ textAlign: "center",marginBottom: 10, zIndex: 3,fontWeight: 700, color: TEXT }}>Star Parameters</div>
+                <div style={{ ...styles.fieldContainer, background: GRADIENT1 }} onClick={(e) => {
                   const input = e.currentTarget.querySelector('input');
                   if (input) input.focus();
                 }}>
@@ -714,7 +755,7 @@ const [koiKepmag, setKoiKepmag] = useState("");
                     onChange={(e) => setKoiSteff(e.target.value)} 
                   />
                 </div>
-                <div style={styles.fieldContainer} onClick={(e) => {
+                <div style={{ ...styles.fieldContainer, background: GRADIENT2 }} onClick={(e) => {
                   const input = e.currentTarget.querySelector('input');
                   if (input) input.focus();
                 }}>
@@ -726,7 +767,7 @@ const [koiKepmag, setKoiKepmag] = useState("");
                     onChange={(e) => setKoiSlogg(e.target.value)} 
                   />
                 </div>
-                <div style={styles.fieldContainer} onClick={(e) => {
+                <div style={{ ...styles.fieldContainer, background: GRADIENT1 }} onClick={(e) => {
                   const input = e.currentTarget.querySelector('input');
                   if (input) input.focus();
                 }}>
@@ -738,7 +779,7 @@ const [koiKepmag, setKoiKepmag] = useState("");
                     onChange={(e) => setKoiSrad(e.target.value)} 
                   />
                 </div>
-                <div style={styles.fieldContainer} onClick={(e) => {
+                <div style={{ ...styles.fieldContainer, background: GRADIENT2 }} onClick={(e) => {
                   const input = e.currentTarget.querySelector('input');
                   if (input) input.focus();
                 }}>
@@ -753,8 +794,8 @@ const [koiKepmag, setKoiKepmag] = useState("");
               </div>
 
               <div style={styles.bottomCol}>
-                <div style={{ textAlign: "center",marginBottom: 10, fontWeight: 700, color: TEXT }}>System Parameters</div>
-                <div style={styles.fieldContainer} onClick={(e) => {
+                <div style={{ textAlign: "center",marginBottom: 10, fontWeight: 700,zIndex: 3, color: TEXT }}>System Parameters</div>
+                <div style={{ ...styles.fieldContainer, background: GRADIENT1 }} onClick={(e) => {
                   const input = e.currentTarget.querySelector('input');
                   if (input) input.focus();
                 }}>
@@ -766,7 +807,7 @@ const [koiKepmag, setKoiKepmag] = useState("");
                     onChange={(e) => setKoiTeq(e.target.value)} 
                   />
                 </div>
-                <div style={styles.fieldContainer} onClick={(e) => {
+                <div style={{ ...styles.fieldContainer, background: GRADIENT2 }} onClick={(e) => {
                   const input = e.currentTarget.querySelector('input');
                   if (input) input.focus();
                 }}>
@@ -778,7 +819,7 @@ const [koiKepmag, setKoiKepmag] = useState("");
                     onChange={(e) => setKoiInsol(e.target.value)} 
                   />
                 </div>
-                <div style={styles.fieldContainer} onClick={(e) => {
+                <div style={{ ...styles.fieldContainer, background: GRADIENT1 }} onClick={(e) => {
                   const input = e.currentTarget.querySelector('input');
                   if (input) input.focus();
                 }}>
@@ -825,7 +866,7 @@ const [koiKepmag, setKoiKepmag] = useState("");
         {resultV2 && (
           
           <div>
-            <div style={{textAlign: "center" as const, fontSize: 30, marginBottom: 20, fontWeight: 700 }}>Results ({resultV2.count ?? "?"})</div>
+            <div style={{textAlign: "center" as const, fontSize: 30, marginBottom: 20, fontWeight: 700}}>Results ({resultV2.count ?? "?"})</div>
             <div style={styles.resultBox}>
             <div style={{ marginTop: 8 }}>
               {Array.isArray(resultV2.results) ? resultV2.results.map((r: any) => (
