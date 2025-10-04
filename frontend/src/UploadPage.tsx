@@ -24,14 +24,15 @@ import backIcon from './components/weui_back-filled.png'; // Adjust path if need
  */
 
 // Colors
-const BORDER = "#727579";
+const BORDER = "#205295";
 const TEXT = "#F5F5F5";
 const WHITE = "#FFFFFF";
 const BLACK = "#000000";
-const BACK = "rgba(30, 6, 166, 0.6)";
+const BACK = "#2833FE";
 const GRADIENT = "#131313";
-const GRADIENT1 = "linear-gradient(90deg, #020407 16%, #0D054A 50%, #020407 88%)";
-const GRADIENT2 = "linear-gradient(90deg, #0D054A 0%, #020407 50%,#0D054A 100%)";
+const GRADIENT1 = "linear-gradient(90deg, #020407 16%, #2833FE 50%, #020407 88%)";
+const GRADIENT2 = "linear-gradient(90deg, #2833FE 0%, #020407 50%, #2833FE 100%)";
+const GRADIENT3 = "linear-gradient(90deg, #2833FE 4%, #151C82 27%, #020407 50%, #151C82 75%, #2833FE 100%)"; 
 const styles: { [k: string]: React.CSSProperties } = {
   page: {
     minHeight: "100vh",
@@ -53,6 +54,7 @@ const styles: { [k: string]: React.CSSProperties } = {
     flex: "1 1 0",
     display: "flex",
     flexDirection: "column",
+    
     gap: 12,
   },
   borderBlock: {
@@ -65,6 +67,7 @@ const styles: { [k: string]: React.CSSProperties } = {
     alignItems: "center",
     justifyContent: "center",
   },
+
   bigBtn: {
   width: "100%",
   height: "100%",
@@ -75,12 +78,12 @@ const styles: { [k: string]: React.CSSProperties } = {
   alignItems: "center",
   justifyContent: "center",
   cursor: "pointer",
-  // Убрали color, fontWeight, fontSize — они теперь в дочерних стилях
 },
 btnContent: {
   display: "flex",
   flexDirection: "column" as const,
   alignItems: "center",
+  justifyContent: "center",
   
   gap: 4,  // Отступ между текстом и подписью (2-6px подкорректируйте)
 },
@@ -88,17 +91,18 @@ mainText: {
   fontWeight: 700,
   fontSize: 18,
   color: TEXT,
+  textAlign: "center",
 },
   descText: {
     color: "#cfe1ff",
-    textAlign: "center",
     fontSize: 14,
     lineHeight: 1.4,
+    textAlign: "center",
   },
 
   // panel wrapper for model pages
   modelWrapper: {
-    maxWidth: "120vh",
+    maxWidth: "70vw",
     margin: "0 auto",
   },
   header: {
@@ -110,7 +114,7 @@ mainText: {
     fontSize: 36,
     fontWeight: 700,
     textTransform: "uppercase" as const,
-    margin: 0,
+    marginTop: 50,
     letterSpacing: 1,
   },
   subtitle: {
@@ -118,16 +122,18 @@ mainText: {
     fontStyle: "italic",
     color: "#c7d3db",
     marginTop: 8,
+    marginBottom: 60,
     maxWidth: 820,
     marginLeft: "auto",
     marginRight: "auto",
+    textAlign: "center" as const,
   },
   arrow: {
     marginTop: 10,
     fontSize: 24,
     color: "#cbd7e3",
   },
-
+  
   // double border block
   doubleOuter: {
     borderRadius: 10,
@@ -141,7 +147,7 @@ mainText: {
     borderRadius: 15,
     border: `1px solid ${BORDER}`,
     padding: 14,
-    background: GRADIENT1,
+    background: GRADIENT3,
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
@@ -166,10 +172,10 @@ mainText: {
 },
 uploadLabel: {
   fontWeight: 700,
-  fontSize: 12,
+  fontSize: '2vh',
 },
 uploadFilesList: {
-  fontSize: 9,
+  fontSize: '1.8vh',
   color: "#222",
   textAlign: "center",  // Добавил для надёжного центрирования текста внутри (если многострочный)
 },
@@ -184,7 +190,7 @@ submitWhite: {
   cursor: "pointer",
   minWidth: "50%",
   textAlign: "center" as const,
-  fontSize: 12,
+  fontSize: '2vh',
 },
 
   // gap between first and second double border: plain black
@@ -200,7 +206,7 @@ submitWhite: {
     padding: 20,
     background: GRADIENT,
     // background: "transparent",
-    marginTop: 0,
+    marginTop: 20,
   },
   fieldsInner: {
     borderRadius: 8,
@@ -235,7 +241,7 @@ submitWhite: {
     display: "flex",
     flexDirection: "column" as const,
     alignItems: "center",
-    width: "95%",
+    width: "30vw",
     // padding: "10px 12px",
     borderRadius: 8,
     border: `1px solid ${BORDER}`,
@@ -246,7 +252,7 @@ submitWhite: {
   },
   fieldLabelCentered: {
     color: WHITE,
-    fontSize: 12,
+    fontSize: '2vh',
     fontWeight: 700,
     marginBottom: 2,
     marginTop: 6,
@@ -259,7 +265,7 @@ submitWhite: {
     border: "none",
     background: "transparent",
     color: WHITE,
-    fontSize: 10,
+    fontSize: '1.8vh',
     outline: "none",
     marginBottom: 2,
     textAlign: "center" as const,
@@ -306,6 +312,7 @@ submitWhite: {
     color: BLACK,
     border: `1px solid ${BORDER}`,
     fontWeight: 700,
+    fontSize: '2vh',
     cursor: "pointer",
     zIndex: 10,
   },
@@ -374,24 +381,26 @@ export default function UploadPage() {
 
   // V2
   const csvRef = useRef<HTMLInputElement | null>(null);
-  const singleRef = useRef<HTMLInputElement | null>(null);
-  const [v2File, setV2File] = useState<File | null>(null); // single file or csv
-  const [loadingV2, setLoadingV2] = useState(false);
-  const [resultV2, setResultV2] = useState<any>(null);
+const singleRef = useRef<HTMLInputElement | null>(null);
+const [v2File, setV2File] = useState<File | null>(null); // single file or csv
+const [loadingV2, setLoadingV2] = useState(false);
+const [resultV2, setResultV2] = useState<any>(null);
+const [parsedData, setParsedData] = useState<any[]>([]);
+const [manualData, setManualData] = useState<any>(null);
 
-  // fields for V2 manual
-  const [koiPeriod, setKoiPeriod] = useState("");
-  const [koiTime0bk, setKoiTime0bk] = useState("");
-  const [koiDuration, setKoiDuration] = useState("");
-  const [koiDepth, setKoiDepth] = useState("");
-  const [koiPrad, setKoiPrad] = useState("");
-  const [koiTeq, setKoiTeq] = useState("");
-  const [koiInsol, setKoiInsol] = useState("");
-  const [koiTcePlntNum, setKoiTcePlntNum] = useState("");
-  const [koiSteff, setKoiSteff] = useState("");
-  const [koiSlogg, setKoiSlogg] = useState("");
-  const [koiSrad, setKoiSrad] = useState("");
-  const [koiKepmag, setKoiKepmag] = useState("");
+// fields for V2 manual
+const [koiPeriod, setKoiPeriod] = useState("");
+const [koiTime0bk, setKoiTime0bk] = useState("");
+const [koiDuration, setKoiDuration] = useState("");
+const [koiDepth, setKoiDepth] = useState("");
+const [koiPrad, setKoiPrad] = useState("");
+const [koiTeq, setKoiTeq] = useState("");
+const [koiInsol, setKoiInsol] = useState("");
+const [koiTcePlntNum, setKoiTcePlntNum] = useState("");
+const [koiSteff, setKoiSteff] = useState("");
+const [koiSlogg, setKoiSlogg] = useState("");
+const [koiSrad, setKoiSrad] = useState("");
+const [koiKepmag, setKoiKepmag] = useState("");
 
 
   
@@ -401,16 +410,24 @@ export default function UploadPage() {
     return (
       
       <div style={styles.page}>
-        <GlowingCircles centerX={0} centerY={10} size={300} />
-        <GlowingCircles centerX={100} centerY={50} size={600} />
-        <GlowingCircles centerX={30} centerY={75} opacity={0.5} size={400}/>
+        <div style={{
+          inset: 0,                // top:0; right:0; bottom:0; left:0
+          pointerEvents: 'none',   // чтобы не блокировать клики
+          overflow: 'visible',
+          zIndex: 1,               // держим ниже интерактивных элементов (которые у вас zIndex: 3 и т.д.)
+        }}>
+          <GlowingCircles centerX={0} centerY={1} size={300} />
+          <GlowingCircles centerX={100} centerY={60} size={600} />
+          <GlowingCircles centerX={30} centerY={75} opacity={0.5} size={400}/>
+          {/* Можно добавить/удалять кружки — они остаются absolute внутри этого fixed-контейнера */}
+        </div>
         <div style={{ maxWidth: 1120, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 18 }}>
-            <h1 style={{ fontSize: 36, marginTop: 20, textTransform: "uppercase", fontWeight: 700 }}>UPLOAD YOUR DATA</h1>
-            <p style={{ marginTop: 10, color: "#c7d3db", fontStyle: "italic", maxWidth: 820, marginLeft: "auto", marginRight: "auto" }}>
+            <h1 style={styles.title}>UPLOAD YOUR DATA</h1>
+            <p style={styles.subtitle}>
               Choose model: Light Curve (FITS) or Features (CSV/manual).
             </p>
-            <div style={{ marginTop: 10, fontSize: 24, color: "#cbd7e3" , marginBottom: 70 }}>↓</div>
+            <div style={styles.arrow}>↓</div>
           </div>
 
           <div style={styles.selectionWrap}>
@@ -419,7 +436,7 @@ export default function UploadPage() {
                 <div role="button" style={styles.bigBtn} onClick={() => setSelected("v1")}>
                   <div style={styles.btnContent}>
                     <span style={styles.mainText}>Light Curve Model</span>
-                    <span style={styles.subtitle}>click to view</span>
+                    <span style={styles.descText}>click to view</span>
                   </div>
                 </div>            
               </div>
@@ -433,7 +450,7 @@ export default function UploadPage() {
                 <div role="button" style={styles.bigBtn} onClick={() => setSelected("v2")}>
                   <div style={styles.btnContent}>
                     <span style={styles.mainText}>Features Model</span>
-                    <span style={styles.subtitle}>click to view</span>
+                    <span style={styles.descText}>click to view</span>
                   </div>
                 </div>    
               </div>
@@ -484,9 +501,17 @@ export default function UploadPage() {
 
     return (
       <div style={styles.page}>
-        <GlowingCircles centerX={0} centerY={10} size={300} />
-        <GlowingCircles centerX={100} centerY={50} size={600} />
-        <GlowingCircles centerX={30} centerY={75} opacity={0.5} size={400}/>
+        <div style={{
+          inset: 0,                // top:0; right:0; bottom:0; left:0
+          pointerEvents: 'none',   // чтобы не блокировать клики
+          overflow: 'visible',
+          zIndex: 1,               // держим ниже интерактивных элементов (которые у вас zIndex: 3 и т.д.)
+        }}>
+          <GlowingCircles centerX={0} centerY={1} size={300} />
+          <GlowingCircles centerX={100} centerY={60} size={400} />
+          <GlowingCircles centerX={30} centerY={75} opacity={0.5} size={400}/>
+          {/* Можно добавить/удалять кружки — они остаются absolute внутри этого fixed-контейнера */}
+        </div>
         <div style={styles.backTopLeft} onClick={() => setSelected(null)}>← Back</div>
         <div style={styles.modelWrapper}>
           {/* Back button top-left on same visual level as border */}
@@ -544,45 +569,99 @@ export default function UploadPage() {
 
   // ========== V2 Page (Features) ==========
   // handlers for V2 upload: allow either single file input or CSV; user can pick one file (single)
-  const onV2SingleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files && e.target.files[0];
-    if (f) setV2File(f);
-    else setV2File(null);
-  };
-  const triggerV2Single = () => singleRef.current && singleRef.current.click();
+  const parseCSV = (file: File): Promise<any[]> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result as string;
+        const lines = text.split('\n').map(line => line.split(',').map(cell => cell.trim().replace(/"/g, '')));
+        if (lines.length < 2) {
+          reject(new Error('Invalid CSV: too few lines'));
+          return;
+        }
+        const headers = lines[0];
+        const rows = lines.slice(1).filter(row => row.length > 0 && row.some(cell => cell));
+        const data = rows.map(row => {
+          const obj: any = {};
+          headers.forEach((header, i) => {
+            obj[header.toLowerCase().replace(/\s+/g, '_')] = row[i] || ''; // Normalize keys to match field names
+          });
+          return obj;
+        });
+        resolve(data);
+      } catch (err) {
+        reject(err);
+      }
+    };
+    reader.onerror = reject;
+    reader.readAsText(file);
+  });
+};
 
-  const onV2CsvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files && e.target.files[0];
-    if (f) setV2File(f);
-    else setV2File(null);
-  };
-  const triggerV2Csv = () => csvRef.current && csvRef.current.click();
-
-  const submitV2Csv = async () => {
-    if (!v2File) {
-      alert("Please choose a CSV file or a single file.");
-      return;
-    }
-    const fd = new FormData();
-    // backend expects key 'csv_file' for CSV path — but we allow single file too; backend handles validation
-    fd.append("csv_file", v2File);
-    setLoadingV2(true);
+const onV2SingleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const f = e.target.files && e.target.files[0];
+  if (f) {
+    setV2File(f);
     try {
-      const res = await axios.post("http://localhost:8000/predict_second", fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-        timeout: 120000,
-      });
-      setResultV2(res.data);
-      localStorage.setItem("analysisData_v2", JSON.stringify(res.data));
-    } catch (err: any) {
-      console.error(err);
-      alert(`CSV upload failed: ${err?.response?.data?.detail ?? "See console"}`);
-    } finally {
-      setLoadingV2(false);
+      const data = await parseCSV(f);
+      setParsedData(data);
+    } catch (err) {
+      console.error('CSV parse error:', err);
+      setParsedData([]);
     }
-  };
+  } else {
+    setV2File(null);
+    setParsedData([]);
+  }
+};
 
-  const submitV2Manual = async () => {
+const triggerV2Single = () => singleRef.current && singleRef.current.click();
+
+const onV2CsvChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const f = e.target.files && e.target.files[0];
+  if (f) {
+    setV2File(f);
+    try {
+      const data = await parseCSV(f);
+      setParsedData(data);
+    } catch (err) {
+      console.error('CSV parse error:', err);
+      setParsedData([]);
+    }
+  } else {
+    setV2File(null);
+    setParsedData([]);
+  }
+};
+
+const triggerV2Csv = () => csvRef.current && csvRef.current.click();
+
+const submitV2Csv = async () => {
+  if (!v2File) {
+    alert("Please choose a CSV file or a single file.");
+    return;
+  }
+  const fd = new FormData();
+  // backend expects key 'csv_file' for CSV path — but we allow single file too; backend handles validation
+  fd.append("csv_file", v2File);
+  setLoadingV2(true);
+  try {
+    const res = await axios.post("http://localhost:8000/predict_second", fd, {
+      headers: { "Content-Type": "multipart/form-data" },
+      timeout: 120000,
+    });
+    setResultV2(res.data);
+    localStorage.setItem("analysisData_v2", JSON.stringify(res.data));
+  } catch (err: any) {
+    console.error(err);
+    alert(`CSV upload failed: ${err?.response?.data?.detail ?? "See console"}`);
+  } finally {
+    setLoadingV2(false);
+  }
+};
+
+const submitV2Manual = async () => {
   // manual requires koiTime0bk and koiDuration non-zero
   const t = Number(koiTime0bk);
   const d = Number(koiDuration);
@@ -590,6 +669,22 @@ export default function UploadPage() {
     alert("Manual submit requires valid Transit Mid Time (koi_time0bk) and Transit Duration (koi_duration) (non-zero).");
     return;
   }
+  const inputData = {
+    koi_period: koiPeriod ?? "",
+    koi_time0bk: koiTime0bk,
+    koi_duration: koiDuration,
+    koi_depth: koiDepth ?? "",
+    koi_prad: koiPrad ?? "",
+    koi_teq: koiTeq ?? "",
+    koi_insol: koiInsol ?? "",
+    koi_tce_plnt_num: koiTcePlntNum ?? "",
+    koi_steff: koiSteff ?? "",
+    koi_slogg: koiSlogg ?? "",
+    koi_srad: koiSrad ?? "",
+    koi_kepmag: koiKepmag ?? "",
+  };
+  setManualData(inputData);
+
   const fd = new FormData();
   // required
   fd.append("koi_time0bk", koiTime0bk);
@@ -625,9 +720,17 @@ export default function UploadPage() {
   return (
     
     <div style={styles.page}>
-      <GlowingCircles centerX={0} centerY={10} size={300} />
-      <GlowingCircles centerX={100} centerY={50} size={600} />
-      <GlowingCircles centerX={30} centerY={75} opacity={0.5} size={400}/>
+      <div style={{
+          inset: 0,                // top:0; right:0; bottom:0; left:0
+          pointerEvents: 'none',   // чтобы не блокировать клики
+          overflow: 'visible',
+          zIndex: 1,               // держим ниже интерактивных элементов (которые у вас zIndex: 3 и т.д.)
+        }}>
+          <GlowingCircles centerX={0} centerY={1} size={300} />
+          <GlowingCircles centerX={100} centerY={60} size={400} />
+          <GlowingCircles centerX={30} centerY={75} opacity={0.5} size={400}/>
+          {/* Можно добавить/удалять кружки — они остаются absolute внутри этого fixed-контейнера */}
+        </div>
     <div style={styles.backTopLeft} onClick={() => setSelected(null)}>← Back</div>
       <div style={styles.modelWrapper}>
         {/* back button top-left */}
@@ -664,12 +767,12 @@ export default function UploadPage() {
         <div style={styles.blackGap} />
 
         {/* second double border: manual fields (single block) */}
-        
+        <div style={styles.arrow}>↓</div>
         <div style={styles.fieldsOuter}>
           <div style={styles.fieldsInner}>
             
             <div style={{ textAlign: "center", marginBottom: 12, zIndex: 3 }}>
-              <div style={{ fontSize: 20, marginBottom: 20, fontWeight: 700, color: TEXT }}>Basic Planet Information</div>
+              <div style={{ fontSize: '3.5vh', marginBottom: 27, fontWeight: 700, color: TEXT }}>Basic Planet Information</div>
               </div>
 
             <div style={styles.basicGrid}>
@@ -742,7 +845,7 @@ export default function UploadPage() {
             {/* bottom two sections inside same block */}
             <div style={styles.bottomTwo}>
               <div style={styles.bottomCol}>
-                <div style={{ textAlign: "center",marginBottom: 10, zIndex: 3,fontWeight: 700, color: TEXT }}>Star Parameters</div>
+                <div style={{ textAlign: "center",marginBottom: 10, zIndex: 3,fontWeight: 700, fontSize: '3.5vh', color: TEXT }}>Star Parameters</div>
                 <div style={{ ...styles.fieldContainer, background: GRADIENT1 }} onClick={(e) => {
                   const input = e.currentTarget.querySelector('input');
                   if (input) input.focus();
@@ -794,7 +897,7 @@ export default function UploadPage() {
               </div>
 
               <div style={styles.bottomCol}>
-                <div style={{ textAlign: "center",marginBottom: 10, fontWeight: 700,zIndex: 3, color: TEXT }}>System Parameters</div>
+                <div style={{ textAlign: "center",marginBottom: 10, fontWeight: 700, zIndex: 3, fontSize: '3.5vh',color: TEXT }}>System Parameters</div>
                 <div style={{ ...styles.fieldContainer, background: GRADIENT1 }} onClick={(e) => {
                   const input = e.currentTarget.querySelector('input');
                   if (input) input.focus();
@@ -864,20 +967,37 @@ export default function UploadPage() {
 
         {/* results */}
         {resultV2 && (
-          
-          <div>
-            <div style={{textAlign: "center" as const, fontSize: 30, marginBottom: 20, fontWeight: 700, marginTop: 30}}>Results ({resultV2.count ?? "?"})</div>
-            <div style={styles.resultBox}>
-            <div style={{ marginTop: 8 }}>
-              {Array.isArray(resultV2.results) ? resultV2.results.map((r: any) => (
-                <div key={r.index} style={{ marginBottom: 10 }}>
-                  <div><b>Row #{r.index}</b> — Probability: {(r.probability * 100).toFixed(2)}% — Exoplanet: {r.exoplanet ? "Yes" : "No"}</div>
+  <div>
+    <div style={{textAlign: "center" as const, fontSize: 30, marginBottom: 20, fontWeight: 700, marginTop: 30}}>Results ({resultV2.count ?? "?"})</div>
+    <div style={styles.resultBox}>
+      <div style={{ marginTop: 8 }}>
+        {Array.isArray(resultV2.results) ? resultV2.results.map((r: any) => {
+          let features = null;
+          if (parsedData.length > 0 && r.index !== undefined) {
+            features = parsedData[r.index] || {};
+          } else if (manualData && resultV2.results.length === 1) {
+            features = manualData;
+          }
+          return (
+            <div key={r.index ?? 0} style={{ marginBottom: 10 }}>
+              <div><b>Row #{r.index ?? 0}</b> — Probability: {(r.probability * 100).toFixed(2)}% — Exoplanet: {r.exoplanet ? "Yes" : "No"}</div>
+              {features && Object.keys(features).length > 0 && (
+                <div style={{ marginLeft: 20, fontSize: 12, marginTop: 5 }}>
+                  <b>Features:</b>
+                  {Object.entries(features).map(([key, val]) => (
+                    <div key={key} style={{ marginBottom: 2 }}>
+                      {String(key)}: {String(val) || 'N/A'}
+                    </div>
+                  ))}
                 </div>
-              )) : <div>No results</div>}
+              )}
             </div>
-            </div>
-          </div>
-        )}
+          );
+        }) : <div>No results</div>}
+      </div>
+    </div>
+  </div>
+)}
       </div>
     </div>
   );
