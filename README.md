@@ -9,8 +9,6 @@
 - Conda (Miniconda/Anaconda) **preferred** OR Python + venv
 - Node.js 16+ and npm (or yarn)
 
-> Ensure the model artifact files the backend expects are present in the backend folder (filenames defined in `backend/main.py`).
-
 ---
 
 ## A) Recommended: conda (copy-paste)
