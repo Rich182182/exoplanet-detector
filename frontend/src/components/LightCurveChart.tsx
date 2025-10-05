@@ -327,7 +327,7 @@ ctx.textBaseline = 'alphabetic';
       const rawPts = getPts(rawCurve);
       if (rawPts.length) drawLine(rawPts, 'rgba(54, 209, 195, 1)', 1.2, null, 0.9);
     }
-    if (showProcessed) drawLine(getPts(processedCurve), 'rgba(54, 209, 195, 1)', 1.8, null, 1);
+    if (showProcessed) drawLine(getPts(processedCurve), '#36d1c3ff', 1.8, null, 1);
     if (showBinned) drawLine(getPts(binnedProcessed), '#2bb9a9', 2.4, [6,4], 1);
 
     // axes ticks

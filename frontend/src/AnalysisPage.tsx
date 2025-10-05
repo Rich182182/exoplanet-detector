@@ -132,7 +132,7 @@ const AnalysisPage: React.FC = () => {
   return (
     <div className={styles.page} style={{ ['--sidebar-width' as any]: `${SIDEBAR_WIDTH}px`, ['--sidebar-height' as any]: `${SIDEBAR_HEIGHT}px` }}>
       <header className={styles.header}>
-        <button className={styles.back} onClick={() => navigate('/')}>← Upload</button>
+        <button className={styles.back} onClick={() => navigate('/model')}>← Upload</button>
         <h1 className={styles.title}>Exoplanet Analysis</h1>
       </header>
 
