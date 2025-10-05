@@ -1,90 +1,84 @@
-# Run Locally — Backend & Frontend (only instructions)
+🚀 How to Run the Project Locally
 
-**Goal:** after reading this file you should be able to run both backend (FastAPI) and frontend (React) locally. Only exact copy-paste commands.
+This project has two parts:
 
----
+Backend (FastAPI, Python) → does all the ML predictions.
 
-## Prerequisites
+Frontend (React, Node.js) → user interface that talks to the backend.
 
-* Python 3.10 (or 3.9+)
-* Conda (Miniconda/Anaconda) **preferred** OR Python + venv
-* Node.js 16+ and npm (or yarn)
+To run everything locally, you need to:
 
-> Ensure the model artifact files the backend expects are present in the backend folder (filenames defined in `backend/main.py`).
+Install dependencies (Python + Node.js).
 
----
+Start the backend server.
 
-## A) Recommended: conda (copy-paste)
+Start the frontend app.
 
-```bash
-# 1. create and activate conda env
+Open the app in your browser at http://localhost:3000.
+
+⚠️ Important: the backend needs trained model files (artifacts). Put them in the backend/ folder and make sure the filenames match what’s defined at the top of backend/main.py (e.g. lgb_model.txt, scaler.pkl, feature_cols.pkl, etc.).
+
+✅ Recommended (Conda users)
+# Create environment
 conda create -n exo python=3.10 -y
 conda activate exo
 
-# 2. install dependencies (conda-forge)
-conda install -c conda-forge mamba -y || true   # optional
-mamba install -c conda-forge python=3.10 fastapi uvicorn numpy pandas scipy astropy joblib lightgbm tsfresh scikit-learn python-multipart -y
+# Install dependencies
+conda install -c conda-forge mamba -y || true
+mamba install -c conda-forge fastapi uvicorn numpy pandas scipy astropy joblib lightgbm tsfresh scikit-learn python-multipart -y || \
+conda install -c conda-forge fastapi uvicorn numpy pandas scipy astropy joblib lightgbm tsfresh scikit-learn python-multipart -y
 
-# 3. start backend
+# Start backend
 cd backend
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-```
 
-Open a second terminal (keep backend running) and run the frontend:
 
-```bash
+Open a new terminal (keep backend running):
+
 cd frontend
 npm install
 npm start
-```
 
-* Backend base URL: [http://localhost:8000](http://localhost:8000)
-* Frontend dev: [http://localhost:3000](http://localhost:3000)
+✅ Alternative (venv + pip)
 
----
+Linux / macOS:
 
-## B) Alternative: venv + pip (copy-paste)
-
-```bash
-# 1. create venv and activate
 cd backend
 python -m venv .venv
-# linux/mac
 source .venv/bin/activate
-# windows (PowerShell)
-.\.venv\Scripts\Activate.ps1
-
-# 2. install packages
 pip install --upgrade pip
 pip install fastapi uvicorn[standard] numpy pandas scipy astropy joblib lightgbm tsfresh scikit-learn python-multipart
-
-# 3. start backend
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-```
 
-Then in another terminal start frontend:
 
-```bash
+Windows (PowerShell):
+
+cd backend
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install --upgrade pip
+pip install fastapi uvicorn[standard] numpy pandas scipy astropy joblib lightgbm tsfresh scikit-learn python-multipart
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+
+Then in a new terminal:
+
 cd frontend
 npm install
 npm start
-```
 
----
+🌐 Access
 
-## Quick API checks (curl)
+Frontend → http://localhost:3000
 
-```bash
-curl -X POST "http://localhost:8000/predict" -F "files=@/full/path/to/file1.fits" -F "files=@/full/path/to/file2.fits"
+Backend API → http://localhost:8000
 
-curl -X POST "http://localhost:8000/predict_second" -F "csv_file=@/full/path/to/data.csv"
-```
+🔎 Quick API Tests
+# Send FITS files
+curl -X POST "http://localhost:8000/predict" \
+  -F "files=@/path/to/file1.fits" \
+  -F "files=@/path/to/file2.fits"
 
----
-
-If you want, I can now add one of the following into the repo:
-
-1. a ready `requirements.txt`,
-2. a minimal `package.json` with `proxy`, or
-3. a start script (`start.sh` for Linux/macOS, or `start.ps1` for Windows).
-   Tell me which to add.
+# Send CSV file
+curl -X POST "http://localhost:8000/predict_second" \
+  -F "csv_file=@/path/to/data.csv"
