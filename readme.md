@@ -79,11 +79,3 @@ curl -X POST "http://localhost:8000/predict" -F "files=@/full/path/to/file1.fits
 curl -X POST "http://localhost:8000/predict_second" -F "csv_file=@/full/path/to/data.csv"
 ```
 
----
-
-If you want, I can now add one of the following into the repo:
-1. a ready `requirements.txt`,  
-2. a minimal `package.json` with `proxy`, or  
-3. a start script (`start.sh` for Linux/macOS, or `start.ps1` for Windows).  
-Tell me which to add.
-
