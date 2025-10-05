@@ -1,8 +1,286 @@
 // src/UploadPage.tsx
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useMemo } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import backIcon from './components/weui_back-filled.png'; // Adjust path if needed
+// вставь этот код в верхнюю часть файла (например под импорты)
+
+// Полностью замените текущий ResultsTable на этот код
+
+// Замените текущий ResultsTable на этот код
+
+type ResItem = {
+  index?: number;
+  probability: number;
+  exoplanet: boolean;
+  features?: { [k: string]: any };
+};
+
+type ResultsTableProps = {
+  results: ResItem[];
+  parsedData: any[]; // из parseCSV (koi_* keys)
+  manualData: { [k: string]: any } | null; // koi_* keys
+};
+
+function prettyKey(k: string) {
+  return k.startsWith("koi_") ? k.slice(4) : k;
+}
+
+export function ResultsTable({ results, parsedData, manualData }: ResultsTableProps) {
+  const [sortBy, setSortBy] = useState<"row" | "prob" | "exo">("prob");
+  const [asc, setAsc] = useState<boolean>(false); // по умолчанию — по убыванию вероятности
+  const [expanded, setExpanded] = useState<Record<number, boolean>>({});
+
+  // --- Настройки внешнего вида ---
+  const tableMaxWidth = 700;           // ширина таблицы
+  const headerBgColor = "#000000";     // фон хедера — чёрный
+  const headerTextColor = "#FFFFFF";   // цвет текста хедера
+  const thPadding = "6px 8px";
+  const tdPadding = "6px 8px";
+  const colWidths = {
+    row: 80,
+    prob: 120,
+    exo: 120,
+    actions: 80
+  };
+  // --------------------------------------------------
+
+  const toggleSort = (col: "row" | "prob" | "exo") => {
+    if (col === sortBy) {
+      setAsc(!asc);
+    } else {
+      setSortBy(col);
+      setAsc(col === "row" ? true : false);
+    }
+  };
+
+  const sorted = useMemo(() => {
+    const arr = [...results];
+    const cmp = (a: ResItem, b: ResItem) => {
+      if (sortBy === "row") {
+        const ai = a.index ?? 0;
+        const bi = b.index ?? 0;
+        return ai - bi;
+      } else if (sortBy === "prob") {
+        return a.probability - b.probability;
+      } else {
+        const av = a.exoplanet ? 1 : 0;
+        const bv = b.exoplanet ? 1 : 0;
+        return av - bv;
+      }
+    };
+    arr.sort((A, B) => (asc ? cmp(A, B) : -cmp(A, B)));
+    return arr;
+  }, [results, sortBy, asc]);
+
+  const toggleExpand = (idx: number) => setExpanded(prev => ({ ...prev, [idx]: !prev[idx] }));
+
+  const renderFeaturesFor = (r: ResItem) => {
+    let featObj: { [k: string]: any } = {};
+    if (r.features && Object.keys(r.features).length > 0) {
+      featObj = r.features as any;
+    } else if (typeof r.index === "number" && parsedData && parsedData[r.index]) {
+      featObj = parsedData[r.index];
+    } else if (manualData) {
+      featObj = manualData;
+    }
+    return featObj;
+  };
+
+  const Arrow = ({ up }: { up: boolean }) => <span style={{ marginLeft: 6, fontSize: 12 }}>{up ? "▲" : "▼"}</span>;
+
+  // Стили контейнера/таблицы (центрирование + бордер)
+  const outerStyle: React.CSSProperties = {
+    display: "flex",
+    justifyContent: "center", // центрируем как якорь
+    marginTop: 18,
+    
+  };
+  const innerWrapper: React.CSSProperties = {
+    width: "100%",
+    maxWidth: tableMaxWidth,
+    
+  };
+  const headerTextStyle: React.CSSProperties = {
+    fontSize: '3.5vh',
+    fontWeight: 700,
+    marginBottom: 20,
+    
+    textAlign: "center" as const,
+  };
+  const tableWrapperStyle: React.CSSProperties = {
+    border: `1px solid ${BORDER}`,
+    overflow: "hidden",
+    width: "100%",
+    borderRadius: 15,
+};
+  const tblStyle: React.CSSProperties = {
+    width: "100%",
+    borderCollapse: "collapse",
+    fontSize: 13,
+    color: "#dfe7ee",
+    margin: "0 auto", // ещё раз центр внутри wrapper
+    
+    overflow: "hidden",
+  };
+  const headtb: React.CSSProperties = {
+    fontSize: 14,
+    fontWeight: 700,
+    background: WHITE,
+    color: BLACK  ,
+  };
+  
+  const thBase: React.CSSProperties = {
+    padding: thPadding,
+    borderBottom: "1px solid rgba(255,255,255,0.06)",
+    cursor: "pointer",
+    userSelect: "none",
+    textAlign: "center" as const,
+    background: WHITE,
+    color: BLACK,
+    fontSize: '1.7vh',
+    fontWeight: 700,
+    verticalAlign: "bottom" as const,
+};
+
+// Стили для первой и последней ячейки
+const thFirst: React.CSSProperties = {
+    ...thBase,
+    borderTopLeftRadius: 15, 
+};
+
+const thLast: React.CSSProperties = {
+    ...thBase,
+    borderTopRightRadius: 15,
+};
+  const tdBase: React.CSSProperties = {
+    padding: tdPadding,
+    fontSize: '1.5vh',
+    textAlign: "center" as const,
+    alignItems: "center",
+    verticalAlign: "center" as const,
+    
+  };
+  const dispositionStyle: React.CSSProperties = {
+    fontWeight: 700
+    
+  };
+
+  return (
+    <div style={outerStyle}>
+      <div style={innerWrapper}>
+        {/* Верхний текст — количество рядов */}
+        <div style={headerTextStyle}>Results ({results ? results.length : 0} rows)</div>
+        <div style={tableWrapperStyle}>
+        <table style={tblStyle}>
+          <thead style={headtb}>
+             <tr>
+              <th style={{ ...thFirst, width: colWidths.row }} onClick={() => toggleSort("row")}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0 }}>
+                  <span style={{ marginTop: 10 }}>Row number</span>
+                  {sortBy === "row" ? (
+                    <span style={{ fontSize: 18 }}>{asc ? '▾' : '▴'}</span>
+                  ) : (
+                    <span style={{ opacity: 0.5, fontSize: 18 }}>▾▴</span>
+                  )}
+                </div>
+              </th>
+              
+              <th style={{ ...thBase, width: colWidths.prob }} onClick={() => toggleSort("prob")}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0}}>
+                  <span>Percent %</span>
+                  {sortBy === "prob" ? (
+                    <span style={{ fontSize: 18 }}>{asc ? '▾' : '▴'}</span>
+                  ) : (
+                    <span style={{ opacity: 0.5, fontSize: 18 }}>▾▴</span>
+                  )}
+                </div>
+              </th>
+              
+              <th style={{ ...thBase, width: colWidths.exo }} onClick={() => toggleSort("exo")}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0 }}>
+                  <span>Disposition</span>
+                  {sortBy === "exo" ? (
+                    <span style={{ fontSize: 18 }}>{asc ? '▾' : '▴'}</span>
+                  ) : (
+                    <span style={{ opacity: 0.5, fontSize: 18 }}>▾▴</span>
+                  )}
+                </div>
+              </th>
+              
+              <th style={{ ...thLast, width: colWidths.actions, textAlign: "center" }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0 }}>
+                  <span>Actions</span>
+                  <span style={{ opacity: 0.5, fontSize: 18, color: WHITE }}>▾▴</span>
+                  </div>
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {sorted.map((r, i) => {
+              const idx = r.index ?? i;
+              const probPct = (r.probability * 100);
+              const disp = r.exoplanet ? "Candidate" : "Not Candidate";
+              const isExpanded = !!expanded[idx];
+
+              return (
+                <React.Fragment key={idx + "-" + i}>
+                  <tr onClick={() => toggleExpand(idx)} style={{ cursor: "pointer", background: isExpanded ? "rgba(255,255,255,0.02)" : "transparent" }}>
+                    <td style={{ ...tdBase }}>{idx}</td>
+                    <td style={{ ...tdBase }}>{isFinite(probPct) ? probPct.toFixed(2) + "%" : "N/A"}</td>
+                    <td style={{ ...tdBase, ...dispositionStyle }}>{disp}</td>
+                    <td style={{ ...tdBase,  }}>
+                      <button
+                        style={{
+                          padding: "4px 8px",
+                          borderRadius: 6,
+                          border: "none",
+                          cursor: "pointer",
+                          minWidth: '4vw',
+                          fontSize: '1.3vh',
+                        }}
+                        onClick={(e) => { e.stopPropagation(); toggleExpand(idx); }}
+                      >
+                        {isExpanded ? "Hide" : "Show"}
+                      </button>
+                    </td>
+                  </tr>
+
+                  {isExpanded && (
+                    <tr>
+                      <td colSpan={4} style={{ padding: 8, background: "rgba(255,255,255,0.01)" }}>
+                        <div style={{ fontSize: 13 }}>
+                          <div style={{ fontWeight: 700, marginBottom: 6, fontSize: '1.7vh', }}>Features:</div>
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                            {Object.entries(renderFeaturesFor(r)).length === 0 ? (
+                              <div style={{ color: "#bfc9d4" }}>No features available</div>
+                            ) : (
+                              Object.entries(renderFeaturesFor(r)).map(([k, v]) => (
+                                <div key={k} style={{ minWidth: 120, padding: 6, borderRadius: 6, background: "rgba(0,0,0,0.25)" }}>
+                                  <div style={{ fontSize: 11, color: "#a8b3c2" }}>{prettyKey(k)}</div>
+                                  <div style={{ fontWeight: 700 }}>{v === null || v === undefined || v === "" ? "N/A" : String(v)}</div>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
 /**
  * UploadPage.tsx — updated per user's instructions.
  *
@@ -41,6 +319,8 @@ const styles: { [k: string]: React.CSSProperties } = {
     color: TEXT,
     fontFamily: "Inter, Roboto, Arial, sans-serif",
     boxSizing: "border-box",
+    alignItems: "center",
+    justifyContent: "center",
   },
   // selection (unchanged main page area)
   selectionWrap: {
@@ -736,7 +1016,7 @@ const submitV2Manual = async () => {
           <GlowingCircles centerX={30} centerY={75} opacity={0.5} size={400}/>
           {/* Можно добавить/удалять кружки — они остаются absolute внутри этого fixed-контейнера */}
         </div>
-    <div style={styles.backTopLeft} onClick={() => setSelected(null)}>← Back</div>
+        <div style={styles.backTopLeft} onClick={() => setSelected(null)}>← Back</div>
       <div style={styles.modelWrapper}>
         {/* back button top-left */}
         
@@ -974,58 +1254,8 @@ const submitV2Manual = async () => {
 
         {/* results */}
         {resultV2 && (
-  <div>
-    <div style={{textAlign: "center" as const, fontSize: 30, marginBottom: 20, fontWeight: 700, marginTop: 30}}>Results ({resultV2.count ?? "?"})</div>
-    <div style={styles.resultBox}>
-      <div style={{ marginTop: 8 }}>
-        {Array.isArray(resultV2.results) ? resultV2.results.map((r: any) => {
-          let features = null;
-
-          // 1) если бэк вернул явные features — используем их (они уже содержат имена фич как в DF)
-          if (r.features && Object.keys(r.features).length > 0) {
-            features = r.features;
-          } else if (parsedData.length > 0 && r.index !== undefined) {
-            // 2) CSV parsed (parsedData) — мы нормализуем ключи при парсинге, используем их
-            features = parsedData[r.index] || {};
-          } else if (manualData && resultV2.results.length === 1) {
-            // 3) ручной ввод — используем manualData (мы ранее сохранили поля без префикса koi_)
-            features = manualData;
-          } else {
-            features = {};
-          }
-
-          return (
-            <div key={r.index ?? 0} style={{ marginBottom: 10 }}>
-              <div><b>Row #{r.index ?? 0}</b> — Probability: {(r.probability * 100).toFixed(2)}% — Exoplanet: {r.exoplanet ? "Yes" : "No"}</div>
-              {features && Object.keys(features).length > 0 && (
-              <details style={{ marginLeft: 20, fontSize: 12, marginTop: 5 }}>
-                <summary style={{ cursor: "pointer" }}><b>Features</b></summary>
-                <div style={{ marginTop: 6 }}>
-                  {/* замените старый map на этот блок */}
-{Object.entries(features).map(([key, val]) => {
-  // убираем префикс 'koi_' если он есть
-  const displayKey = String(key).startsWith("koi_") ? String(key).slice(4) : String(key);
-  // при желании можно заменить подчёркивания на пробелы:
-  // const prettyKey = displayKey.replace(/_/g, ' ');
-  const prettyKey = displayKey; // <- оставляем без дополнительных изменений (как просил)
-
-  return (
-    <div key={key} style={{ marginBottom: 2 }}>
-      {prettyKey}: {val === null || val === undefined || val === "" ? 'N/A' : String(val)}
-    </div>
-  );
-})}
-
-                </div>
-              </details>
-)}
-            </div>
-          );
-        }) : <div>No results</div>}
-      </div>
-    </div>
-  </div>
-)}
+          <ResultsTable results={resultV2.results ?? []} parsedData={parsedData} manualData={manualData} />
+        )}
       </div>
     </div>
   );
