@@ -299,6 +299,7 @@ function CatalogPage() {
                 breakClassName={'page-item'}
                 breakLinkClassName={'page-link'}
                 activeClassName={'active'}
+                forcePage={currentPage}
               />
             )}
           </ResultsPanel>

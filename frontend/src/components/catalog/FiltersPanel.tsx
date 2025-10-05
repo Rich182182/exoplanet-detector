@@ -15,26 +15,26 @@ interface FiltersPanelProps {
   clearFilters: () => void;
 }
 
-const MdiEarth = () => <Icon icon="mdi:earth" />;
 const MajesticonsPlanetLine = () => <Icon icon="majesticons:planet-line" />;
+const RiPlanetLineIcon = () => <Icon icon="ri:planet-line" />;
 const MdiHelpCircleOutline = () => <Icon icon="mdi:help-circle-outline" />;
 const MdiWeb = () => <Icon icon="mdi:web" />;
-const MdiOrbit = () => <Icon icon="mdi:orbit" />;
-const MdiSatelliteVariant = () => <Icon icon="mdi:satellite-variant" />;
+const KeplerIcon = () => <Icon icon="tabler:satellite" />;
+const TessIcon = () => <Icon icon="la:satellite" />;
 
 const planetTypeOptions = [
-  { value: 'all', label: 'All Types', icon: MdiEarth },
+  { value: 'all', label: 'All Types', icon: MdiWeb },
   { value: 'Terrestrial', label: 'Terrestrial', icon: MajesticonsPlanetLine },
   { value: 'Superearth', label: 'Superearth', icon: Earth },
-  { value: 'Neptune-like', label: 'Neptune-like', icon: Planet24Regular },
+  { value: 'Neptune-like', label: 'Neptune-like', icon: RiPlanetLineIcon },
   { value: 'Gas giant', label: 'Gas giant', icon: Planet3 },
   { value: 'Unknown', label: 'Unknown', icon: MdiHelpCircleOutline },
 ];
 
 const missionOptions = [
   { value: 'all', label: 'All Missions', icon: MdiWeb },
-  { value: 'Kepler', label: 'Kepler', icon: MdiOrbit },
-  { value: 'TESS', label: 'TESS', icon: MdiSatelliteVariant },
+  { value: 'Kepler', label: 'Kepler', icon: KeplerIcon },
+  { value: 'TESS', label: 'TESS', icon: TessIcon },
 ];
 
 function FiltersPanel({

@@ -5,7 +5,11 @@
   "proxy": "https://exoplanetarchive.ipac.caltech.edu",
   "dependencies": {
     "@fluentui/react-icons": "^2.0.311",
+    "@iconify-json/icon-park-solid": "^1.2.4",
+    "@iconify-json/la": "^1.2.1",
     "@iconify-json/mingcute": "^1.2.5",
+    "@iconify-json/ri": "^1.2.5",
+    "@iconify-json/tabler": "^1.2.23",
     "@iconify/react": "^6.0.2",
     "@mynaui/icons-react": "^0.3.9",
     "@solar-icons/react": "^1.0.1",

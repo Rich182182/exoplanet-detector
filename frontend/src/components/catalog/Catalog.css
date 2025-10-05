@@ -116,7 +116,7 @@
     display: flex;
     flex-direction: row;
     margin: 0 auto;
-    margin-bottom: 100px;
+    margin-bottom: 40px;
     box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 
                 inset 0 -1px 1px rgba(0, 0, 0, 0.1);
 }
@@ -327,14 +327,16 @@
 .dropdown-menu {
   position: relative;
   width: 256px;
+  border: 1px solid var(--neutral-700);
+  border-radius: var(--radius-sm);
 }
 
 .dropdown-toggle {
   width: 100%;
   height: 40px;
   background: transparent;
-  border: 1px solid var(--neutral-700);
-  border-radius: var(--radius-sm);
+  border: none;
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -347,11 +349,9 @@
 
 .dropdown-options {
   background: transparent;
-  border: 1px solid var(--neutral-700);
-  border-radius: var(--radius-sm);
+  border: none;
   list-style: none;
   margin: 0;
-  margin-top: 8px;
   padding: 8px 12px;
   max-height: 280px;
   overflow-y: auto;
@@ -387,12 +387,12 @@
 }
 
 .dropdown-options li.active {
-    background: var(--neutral-100);
-    color: var(--neutral-900);
+    background: var(--neutral-700);
+    color: var(--neutral-100);
 }
 
 .dropdown-options li.active .option-dot {
-    background-color: var(--neutral-900);
+    background-color: var(--neutral-100);
 }
 
 .input-field {
@@ -434,6 +434,7 @@
 
 .arrow-icon {
   transition: transform 0.3s ease;
+  color: var(--neutral-500);
 }
 
 .arrow-icon-open {
