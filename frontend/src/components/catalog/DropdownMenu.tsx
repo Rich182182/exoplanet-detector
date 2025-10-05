@@ -19,7 +19,6 @@ function DropdownMenu({ options, value, onChange, placeholder }: DropdownMenuPro
 
   const handleSelect = (optionValue: string) => {
     onChange(optionValue);
-    setIsOpen(false);
   };
 
   const selectedOption = options.find(o => o.value === value);
@@ -27,8 +26,8 @@ function DropdownMenu({ options, value, onChange, placeholder }: DropdownMenuPro
   return (
     <div className={`dropdown-menu ${isOpen ? 'open' : ''}`}>
       <button className="dropdown-toggle" onClick={() => setIsOpen(!isOpen)}>
-        <span className={!value ? 'placeholder' : ''}>
-          {selectedOption ? selectedOption.label : placeholder}
+        <span className="placeholder">
+          {placeholder}
         </span>
         <Icon icon="iconamoon:arrow-up-2-duotone" className={`arrow-icon ${isOpen ? 'arrow-icon-open' : ''}`} />
       </button>

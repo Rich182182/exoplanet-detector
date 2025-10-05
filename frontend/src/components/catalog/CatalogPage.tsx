@@ -10,12 +10,48 @@ import FiltersPanel from './FiltersPanel';
 import ResultsPanel from './ResultsPanel';
 import PlanetPopup from './PlanetPopup';
 import PlanetCard from './PlanetCard';
+import LoadingIndicator from './LoadingIndicator'; // Import the new component
 
-const placeholderImages = [
-  '/b62eabe5863821a86b684aaabf7b687f0c54e25f.jpg',
-  '/50ec4e79b8bb9771d127f621fb27d1245099c441.jpg',
-  '/b8f226896d1a04d4f487ecc66579e97bc32e54ae.jpg',
-];
+const planetImageMap: Record<string, string[]> = {
+  'Terrestrial': [
+    '/planets/terrestrial/1.jpg',
+    '/planets/terrestrial/2.jpg',
+    '/planets/terrestrial/3.jpg',
+    '/planets/terrestrial/4.jpg',
+    '/planets/terrestrial/5.jpg',
+  ],
+  'Superearth': [
+    '/planets/superearth/1.png',
+    '/planets/superearth/2.png',
+    '/planets/superearth/3.png',
+    '/planets/superearth/4.png',
+    '/planets/superearth/6.png',
+  ],
+  'Neptune-like': [
+    '/planets/neptune-like/1.jpg',
+    '/planets/neptune-like/2.png',
+    '/planets/neptune-like/3.png',
+    '/planets/neptune-like/5.png',
+  ],
+  'Gas giant': [
+    '/planets/gas-giant/1.jpg',
+    '/planets/gas-giant/2.png',
+    '/planets/gas-giant/3.png',
+    '/planets/gas-giant/4.png',
+    '/planets/gas-giant/5.png',
+    '/planets/gas-giant/6.png',
+    '/planets/gas-giant/7.png',
+    '/planets/gas-giant/8.png',
+  ],
+  'Unknown': [
+    '/planets/unknown/1.png',
+  ],
+};
+
+const getRandomImage = (planetType: string, index: number) => {
+  const images = planetImageMap[planetType] || planetImageMap['Unknown'];
+  return images[index % images.length];
+};
 
 let planetIdCounter = 0;
 
@@ -55,6 +91,7 @@ function PlanetGrid({ currentItems, onPlanetClick }: { currentItems: Planet[], o
 function CatalogPage() {
   const [allPlanets, setAllPlanets] = useState<Planet[]>([]);
   const [loading, setLoading] = useState(true);
+  const [contentLoaded, setContentLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
@@ -91,7 +128,7 @@ function CatalogPage() {
           return {
             id: `planet-${planetIdCounter++}`,
             name: d.kepler_name || `Kepid ${d.kepid}`,
-            imageUrl: placeholderImages[index % placeholderImages.length],
+            imageUrl: getRandomImage(type, index),
             source: "Kepler",
             type: type,
             disposition: d.koi_disposition,
@@ -122,7 +159,7 @@ function CatalogPage() {
           return {
             id: `planet-${planetIdCounter++}`,
             name: `TID ${d.tid}`,
-            imageUrl: placeholderImages[(kepler.length + index) % placeholderImages.length],
+            imageUrl: getRandomImage(type, kepler.length + index),
             source: "TESS",
             type: type,
             disposition: d.tfopwg_disp,
@@ -146,7 +183,10 @@ function CatalogPage() {
         setError('Failed to fetch planets. Please try again later.');
         console.error(err);
       } finally {
-        setLoading(false);
+        setTimeout(() => {
+          setLoading(false);
+          setTimeout(() => setContentLoaded(true), 100); // Short delay for fade-in
+        }, 1500); // Artificial delay to show the animation
       }
     };
 
@@ -164,9 +204,9 @@ function CatalogPage() {
     };
   }, [searchTerm]);
 
-  // Handle body scroll lock for popup
+  // Handle body scroll lock for popup and loading
   useEffect(() => {
-    if (selectedPlanet) {
+    if (selectedPlanet || loading) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'auto';
@@ -174,7 +214,7 @@ function CatalogPage() {
     return () => {
       document.body.style.overflow = 'auto';
     };
-  }, [selectedPlanet]);
+  }, [selectedPlanet, loading]);
 
   const clearFilters = () => {
     setSearchTerm('');
@@ -213,56 +253,58 @@ function CatalogPage() {
     setCurrentPage(event.selected);
   };
 
-  if (loading) {
-    return <div>Loading planets...</div>;
-  }
-
   if (error) {
     return <div>{error}</div>;
   }
 
   return (
     <PageContainer>
-      <BackgroundEffects />
-      <HeroSection />
-      <CatalogView>
-        <FiltersPanel
-          planetType={planetType}
-          setPlanetType={setPlanetType}
-          mission={mission}
-          setMission={setMission}
-          clearFilters={clearFilters}
-        />
-        <ResultsPanel
-          totalCount={filteredPlanets.length}
-          searchValue={searchTerm}
-          onSearchChange={setSearchTerm}
-        >
-          <PlanetGrid currentItems={currentItems} onPlanetClick={openPlanetPopup} />
-          {pageCount > 1 && (
-            <ReactPaginate
-              breakLabel="..."
-              nextLabel=">"
-              onPageChange={handlePageClick}
-              pageRangeDisplayed={5}
-              pageCount={pageCount}
-              previousLabel="<"
-              renderOnZeroPageCount={null}
-              containerClassName={'pagination'}
-              pageClassName={'page-item'}
-              pageLinkClassName={'page-link'}
-              previousClassName={'page-item'}
-              previousLinkClassName={'page-link'}
-              nextClassName={'page-item'}
-              nextLinkClassName={'page-link'}
-              breakClassName={'page-item'}
-              breakLinkClassName={'page-link'}
-              activeClassName={'active'}
-            />
-          )}
-        </ResultsPanel>
-      </CatalogView>
-      <PlanetPopup planet={selectedPlanet} onClose={closePlanetPopup} />
+      <LoadingIndicator show={loading} />
+      <div className={`catalog-content ${contentLoaded ? 'loaded' : ''}`}>
+        <BackgroundEffects />
+        <HeroSection />
+        <CatalogView>
+          <FiltersPanel
+            planetType={planetType}
+            setPlanetType={setPlanetType}
+            mission={mission}
+            setMission={setMission}
+            clearFilters={clearFilters}
+          />
+          <ResultsPanel
+            totalCount={filteredPlanets.length}
+            searchValue={searchTerm}
+            onSearchChange={setSearchTerm}
+            pageCount={pageCount}
+            onPageChange={handlePageClick}
+            currentPage={currentPage}
+          >
+            <PlanetGrid currentItems={currentItems} onPlanetClick={openPlanetPopup} />
+            {pageCount > 1 && (
+              <ReactPaginate
+                breakLabel="..."
+                nextLabel=">"
+                onPageChange={handlePageClick}
+                pageRangeDisplayed={5}
+                pageCount={pageCount}
+                previousLabel="<"
+                renderOnZeroPageCount={null}
+                containerClassName={'pagination'}
+                pageClassName={'page-item'}
+                pageLinkClassName={'page-link'}
+                previousClassName={'page-item'}
+                previousLinkClassName={'page-link'}
+                nextClassName={'page-item'}
+                nextLinkClassName={'page-link'}
+                breakClassName={'page-item'}
+                breakLinkClassName={'page-link'}
+                activeClassName={'active'}
+              />
+            )}
+          </ResultsPanel>
+        </CatalogView>
+        <PlanetPopup planet={selectedPlanet} onClose={closePlanetPopup} />
+      </div>
     </PageContainer>
   );
 }

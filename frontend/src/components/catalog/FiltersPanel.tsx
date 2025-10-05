@@ -15,26 +15,33 @@ interface FiltersPanelProps {
   clearFilters: () => void;
 }
 
+const MdiEarth = () => <Icon icon="mdi:earth" />;
+const MajesticonsPlanetLine = () => <Icon icon="majesticons:planet-line" />;
+const MdiHelpCircleOutline = () => <Icon icon="mdi:help-circle-outline" />;
+const MdiWeb = () => <Icon icon="mdi:web" />;
+const MdiOrbit = () => <Icon icon="mdi:orbit" />;
+const MdiSatelliteVariant = () => <Icon icon="mdi:satellite-variant" />;
+
+const planetTypeOptions = [
+  { value: 'all', label: 'All Types', icon: MdiEarth },
+  { value: 'Terrestrial', label: 'Terrestrial', icon: MajesticonsPlanetLine },
+  { value: 'Superearth', label: 'Superearth', icon: Earth },
+  { value: 'Neptune-like', label: 'Neptune-like', icon: Planet24Regular },
+  { value: 'Gas giant', label: 'Gas giant', icon: Planet3 },
+  { value: 'Unknown', label: 'Unknown', icon: MdiHelpCircleOutline },
+];
+
+const missionOptions = [
+  { value: 'all', label: 'All Missions', icon: MdiWeb },
+  { value: 'Kepler', label: 'Kepler', icon: MdiOrbit },
+  { value: 'TESS', label: 'TESS', icon: MdiSatelliteVariant },
+];
+
 function FiltersPanel({
     planetType, setPlanetType,
     mission, setMission,
     clearFilters
 }: FiltersPanelProps) {
-  const planetTypeOptions = [
-    { value: 'all', label: 'All Types', icon: () => <Icon icon="mdi:earth" /> },
-    { value: 'Terrestrial', label: 'Terrestrial', icon: () => <Icon icon="majesticons:planet-line" /> },
-    { value: 'Superearth', label: 'Superearth', icon: Earth },
-    { value: 'Neptune-like', label: 'Neptune-like', icon: Planet24Regular },
-    { value: 'Gas giant', label: 'Gas giant', icon: Planet3 },
-    { value: 'Unknown', label: 'Unknown', icon: () => <Icon icon="mdi:help-circle-outline" /> },
-  ];
-
-  const missionOptions = [
-    { value: 'all', label: 'All Missions', icon: () => <Icon icon="mdi:web" /> },
-    { value: 'Kepler', label: 'Kepler', icon: () => <Icon icon="mdi:telescope" /> },
-    { value: 'TESS', label: 'TESS', icon: () => <Icon icon="mdi:satellite-variant" /> },
-  ];
-
   return (
     <aside className="filters-panel">
       <div className="filters-panel-header">
