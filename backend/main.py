@@ -11,6 +11,7 @@ FastAPI backend для локального использования.
  - сырая кривая (time, flux) и обработанная кривая (time, flux).
 Большинство ключевых мест прокомментированы подробно.
 """
+from fastapi import Request
 import re
 import unicodedata
 from fastapi import HTTPException
@@ -867,13 +868,12 @@ def model2_meta():
 
 @app.post("/predict_second")
 async def predict_second(
+    request: Request,
     csv_file: Optional[UploadFile] = File(None),
-    # ручные поля — принимаем только те, что реально нужны (можно расширять)
     koi_time0bk: Optional[str] = Form(None),
     koi_duration: Optional[str] = Form(None),
-    # Дополнительно — остальные признаки в виде необязательных form полей (общая обработка ниже)
-    # Не обязательно перечислять все — клиент пришлёт нужные поля.
 ):
+
     """
     Логика:
      - если ручной ввод и оба REQUIRED_FIELDS_V2 заполнены (и не 0) -> используем ручной ввод (1 строка)
@@ -898,21 +898,51 @@ async def predict_second(
         manual_has_required = True
 
     if manual_has_required:
-        # собираем все incoming form поля (fastapi сохраняет их в request.form, но мы принимаем основные)
-        # Создаём DataFrame с единственной строкой. Для простоты — берём только feature names из FEATURE_COLS2:
+        # читаем все form-поля динамически
+        form = await request.form()
+        form_dict = {str(k): str(v).strip() for k, v in form.items()}
+
+        # создаём одну строку, пытаясь сопоставить каждое FEATURE_COLS2
         row = {}
         for feat in FEATURE_COLS2:
-            # пробуем получить из form: FastAPI прокинет поля как аргументы; но если не перечислили — просто None
-            # здесь мы используем koi_time0bk и koi_duration уже полученные, остальные ставим NaN
-            if feat == "koi_time0bk":
-                row[feat] = t
-            elif feat == "koi_duration":
-                row[feat] = d
+            value_found = None
+
+            # 1) прямое совпадение имени
+            if feat in form_dict:
+                value_found = form_dict[feat]
             else:
-                # если поле пришло в form как ключ — можно получить через request (сложнее),
-                # но обычно пользователь заполнил минимум — оставим NaN (импутер заполнит)
+                # 2) совпадение по нормализованному имени или по синонимам
+                feat_norm = _normalize_colname(feat)
+                for fk in form_dict.keys():
+                    fk_norm = _normalize_colname(fk)
+                    if fk_norm == feat_norm:
+                        value_found = form_dict[fk]
+                        break
+                    # попытка сопоставления через _match_by_name
+                    matched = _match_by_name(fk_norm)
+                    if matched == feat:
+                        value_found = form_dict[fk]
+                        break
+
+            # 3) приводим к float или NaN
+            if value_found is None or value_found == "":
                 row[feat] = np.nan
+            else:
+                try:
+                    row[feat] = float(value_found)
+                except:
+                    # допустимы дробные с запятой, заменим запятую на точку
+                    try:
+                        row[feat] = float(value_found.replace(',', '.'))
+                    except:
+                        row[feat] = np.nan
+
         df = pd.DataFrame([row])
+
+        # дополнительная валидация: ensure required fields present after mapping
+        if pd.isna(df.loc[0, 'koi_time0bk']) or pd.isna(df.loc[0, 'koi_duration']):
+            raise HTTPException(status_code=400, detail="Manual input provided but koi_time0bk or koi_duration missing/invalid after parsing.")
+
     else:
         # используем CSV
         if csv_file is None:

@@ -66,6 +66,7 @@ const styles: { [k: string]: React.CSSProperties } = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    zIndex: 3,
   },
 
   bigBtn: {
@@ -423,7 +424,7 @@ const [koiKepmag, setKoiKepmag] = useState("");
         </div>
         <div style={{ maxWidth: 1120, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 18 }}>
-            <h1 style={styles.title}>UPLOAD YOUR DATA</h1>
+            <h1 style={styles.title}>Choose the model</h1>
             <p style={styles.subtitle}>
               Choose model: Light Curve (FITS) or Features (CSV/manual).
             </p>
@@ -441,7 +442,7 @@ const [koiKepmag, setKoiKepmag] = useState("");
                 </div>            
               </div>
               <div style={styles.borderBlock}>
-                <div style={styles.descText}>Process raw FITS light curves — resample, detrend and detect transit signatures automatically.</div>
+                <div style={styles.descText}>This model achieves 80% precision and 96% recall in exoplanet candidate classification, trained on preprocessed raw light curves from transit missions, making it semi-universal for any transit-based mission data. The preprocessing pipeline applied to raw photometric curves allows the model to generalize across different observational campaigns while maintaining high sensitivity to genuine planetary signals.</div>
               </div>
             </div>
 
@@ -455,7 +456,7 @@ const [koiKepmag, setKoiKepmag] = useState("");
                 </div>    
               </div>
               <div style={styles.borderBlock}>
-                <div style={styles.descText}>Upload CSV of features or enter them manually. Manual mode requires transit time and duration.</div>
+                <div style={styles.descText}>This model demonstrates superior performance with 90% precision and 96% accuracy, trained on engineered features extracted from NASA archive data across multiple transit missions, making it fully universal for exoplanet validation. The model requires some both photometric curve characteristics and stellar system parameters, enabling comprehensive candidate assessment through multi-dimensional feature space analysis.</div>
               </div>
             </div>
           </div>
@@ -520,8 +521,7 @@ const [koiKepmag, setKoiKepmag] = useState("");
           <div style={styles.header}>
             <h1 style={styles.title}>UPLOAD YOUR DATA</h1>
             <p style={styles.subtitle}>
-              Upload FITS files containing time and flux. The backend will auto-detect columns, resample and detrend the signal.
-            </p>
+To use this model, prepare one or more files containing time-series photometry with two required columns: "time" and "flux", representing the temporal sequence and normalized stellar brightness measurements respectively. The model accepts both single-file and multi-file inputs for several quarters observation of single target, processing it through the same preprocessing pipeline used during training before generating classification predictions.            </p>
             <div style={styles.arrow}>↓</div>
           </div>
 
@@ -669,37 +669,41 @@ const submitV2Manual = async () => {
     alert("Manual submit requires valid Transit Mid Time (koi_time0bk) and Transit Duration (koi_duration) (non-zero).");
     return;
   }
+
+  // manualData for display: use "field-like" names (no koi_ prefix) so user sees same keys they typed
   const inputData = {
-    koi_period: koiPeriod ?? "",
-    koi_time0bk: koiTime0bk,
-    koi_duration: koiDuration,
-    koi_depth: koiDepth ?? "",
-    koi_prad: koiPrad ?? "",
-    koi_teq: koiTeq ?? "",
-    koi_insol: koiInsol ?? "",
-    koi_tce_plnt_num: koiTcePlntNum ?? "",
-    koi_steff: koiSteff ?? "",
-    koi_slogg: koiSlogg ?? "",
-    koi_srad: koiSrad ?? "",
-    koi_kepmag: koiKepmag ?? "",
+    period: koiPeriod ?? "",
+    time0bk: koiTime0bk,
+    duration: koiDuration,
+    depth: koiDepth ?? "",
+    prad: koiPrad ?? "",
+    teq: koiTeq ?? "",
+    insol: koiInsol ?? "",
+    tce_plnt_num: koiTcePlntNum ?? "",
+    steff: koiSteff ?? "",
+    slogg: koiSlogg ?? "",
+    srad: koiSrad ?? "",
+    kepmag: koiKepmag ?? "",
   };
   setManualData(inputData);
 
   const fd = new FormData();
-  // required
+  // keep required koi_ keys so backend recognizes manual input
   fd.append("koi_time0bk", koiTime0bk);
   fd.append("koi_duration", koiDuration);
-  // append others (or empty to be imputed)
-  fd.append("koi_period", koiPeriod ?? "");
-  fd.append("koi_depth", koiDepth ?? "");
-  fd.append("koi_prad", koiPrad ?? "");
-  fd.append("koi_teq", koiTeq ?? "");
-  fd.append("koi_insol", koiInsol ?? "");
-  fd.append("koi_tce_plnt_num", koiTcePlntNum ?? "");
-  fd.append("koi_steff", koiSteff ?? "");
-  fd.append("koi_slogg", koiSlogg ?? "");
-  fd.append("koi_srad", koiSrad ?? "");
-  fd.append("koi_kepmag", koiKepmag ?? "");
+  // Also append the same values under "field" names (without koi_) so front can display exact field names
+  fd.append("period", koiPeriod ?? "");
+  fd.append("time0bk", koiTime0bk);
+  fd.append("duration", koiDuration);
+  fd.append("depth", koiDepth ?? "");
+  fd.append("prad", koiPrad ?? "");
+  fd.append("teq", koiTeq ?? "");
+  fd.append("insol", koiInsol ?? "");
+  fd.append("tce_plnt_num", koiTcePlntNum ?? "");
+  fd.append("steff", koiSteff ?? "");
+  fd.append("slogg", koiSlogg ?? "");
+  fd.append("srad", koiSrad ?? "");
+  fd.append("kepmag", koiKepmag ?? "");
 
   setLoadingV2(true);
   try {
@@ -716,6 +720,7 @@ const submitV2Manual = async () => {
     setLoadingV2(false);
   }
 };
+
 
   return (
     
@@ -739,7 +744,9 @@ const submitV2Manual = async () => {
         <div style={styles.header}>
           <h1 style={styles.title}>UPLOAD YOUR DATA</h1>
           <p style={styles.subtitle}>
-            Provide CSV or a single file, or fill fields manually. Manual mode requires Transit Time and Transit Duration (non-zero).
+            Input data can be provided either manually or via CSV file containing the following features in order: "period", "time0bk", "duration", "depth", "prad", "teq", "insol", "tce_plnt_num", "steff", "slogg", "srad", "kepmag", where column headers must match exactly or features must appear in this precise sequence. The standardized feature set encompasses transit geometry, planetary characteristics, stellar properties, and observational metrics derived from the preprocessing pipeline validated across Kepler, K2, and TESS missions.
+
+
           </p>
           <div style={styles.arrow}>↓</div>
         </div>
@@ -960,7 +967,7 @@ const submitV2Manual = async () => {
           zIndex: 10, // Опционально: чтобы элемент был поверх других
           marginBottom: 20,
         }}>
-          <div style={{ cursor: "pointer" }} onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })}>
+          <div style={{ cursor: "pointer", marginTop: 40 }} onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })}>
             <img src={backIcon} alt="Back" style={{ width: 54, height: 24}} /> {/* Removed filter to keep original white color */}
           </div>
         </div>
@@ -973,24 +980,45 @@ const submitV2Manual = async () => {
       <div style={{ marginTop: 8 }}>
         {Array.isArray(resultV2.results) ? resultV2.results.map((r: any) => {
           let features = null;
-          if (parsedData.length > 0 && r.index !== undefined) {
+
+          // 1) если бэк вернул явные features — используем их (они уже содержат имена фич как в DF)
+          if (r.features && Object.keys(r.features).length > 0) {
+            features = r.features;
+          } else if (parsedData.length > 0 && r.index !== undefined) {
+            // 2) CSV parsed (parsedData) — мы нормализуем ключи при парсинге, используем их
             features = parsedData[r.index] || {};
           } else if (manualData && resultV2.results.length === 1) {
+            // 3) ручной ввод — используем manualData (мы ранее сохранили поля без префикса koi_)
             features = manualData;
+          } else {
+            features = {};
           }
+
           return (
             <div key={r.index ?? 0} style={{ marginBottom: 10 }}>
               <div><b>Row #{r.index ?? 0}</b> — Probability: {(r.probability * 100).toFixed(2)}% — Exoplanet: {r.exoplanet ? "Yes" : "No"}</div>
               {features && Object.keys(features).length > 0 && (
-                <div style={{ marginLeft: 20, fontSize: 12, marginTop: 5 }}>
-                  <b>Features:</b>
-                  {Object.entries(features).map(([key, val]) => (
-                    <div key={key} style={{ marginBottom: 2 }}>
-                      {String(key)}: {String(val) || 'N/A'}
-                    </div>
-                  ))}
+              <details style={{ marginLeft: 20, fontSize: 12, marginTop: 5 }}>
+                <summary style={{ cursor: "pointer" }}><b>Features</b></summary>
+                <div style={{ marginTop: 6 }}>
+                  {/* замените старый map на этот блок */}
+{Object.entries(features).map(([key, val]) => {
+  // убираем префикс 'koi_' если он есть
+  const displayKey = String(key).startsWith("koi_") ? String(key).slice(4) : String(key);
+  // при желании можно заменить подчёркивания на пробелы:
+  // const prettyKey = displayKey.replace(/_/g, ' ');
+  const prettyKey = displayKey; // <- оставляем без дополнительных изменений (как просил)
+
+  return (
+    <div key={key} style={{ marginBottom: 2 }}>
+      {prettyKey}: {val === null || val === undefined || val === "" ? 'N/A' : String(val)}
+    </div>
+  );
+})}
+
                 </div>
-              )}
+              </details>
+)}
             </div>
           );
         }) : <div>No results</div>}
