@@ -2,7 +2,7 @@
 import React, { useRef, useState, useMemo } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import backIcon from './components/weui_back-filled.png'; // Adjust path if needed
+import backIcon from './components/weui_back-filled.png';
 // вставь этот код в верхнюю часть файла (например под импорты)
 
 // Полностью замените текущий ResultsTable на этот код
@@ -317,7 +317,7 @@ const styles: { [k: string]: React.CSSProperties } = {
     padding: 28,
     background: "#040608",
     color: TEXT,
-    fontFamily: "Inter, Roboto, Arial, sans-serif",
+    fontFamily: "Readex Pro, sans-serif",
     boxSizing: "border-box",
     alignItems: "center",
     justifyContent: "center",
